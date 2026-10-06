@@ -2,7 +2,7 @@
 
 Use this to define a disciplined Smart-Recovery first release.
 
-## In scope
+
 
 List the capabilities you believe should be built in Phase 1.
 
