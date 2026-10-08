@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PVC Test Data Loader</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2E7D32 0%, #1976D2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            max-width: 700px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #2E7D32;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .warning-box {
+            background-color: #FFF3E0;
+            border-left: 4px solid #F57C00;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            flex: 1;
+            min-width: 150px;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-load {
+            background-color: #2E7D32;
+            color: white;
+        }
+
+        .btn-load:hover {
+            background-color: #1b5e20;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
+        }
+
+        .btn-clear {
+            background-color: #D32F2F;
+            color: white;
+        }
+
+        .btn-clear:hover {
+            background-color: #B71C1C;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3);
+        }
+
+        .btn-main {
+            background-color: #1976D2;
+            color: white;
+            width: 100%;
+        }
+
+        .btn-main:hover {
+            background-color: #1565c0;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+        }
+
+        .test-users {
+            margin-bottom: 30px;
+        }
+
+        .test-users h2 {
+            color: #2E7D32;
+            font-size: 16px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #E0E0E0;
+        }
+
+        .user-card {
+            background-color: #F5F5F5;
+            border: 1px solid #E0E0E0;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+
+        .user-email {
+            font-weight: 600;
+            color: #2E7D32;
+            margin-bottom: 4px;
+        }
+
+        .user-password {
+            color: #666;
+            font-family: 'Courier New', monospace;
+            background-color: white;
+            padding: 4px 8px;
+            border-radius: 3px;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+
+        .user-pets {
+            color: #555;
+            font-size: 12px;
+        }
+
+        .user-pets strong {
+            color: #1976D2;
+        }
+
+        .status-message {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .status-message.success {
+            background-color: #E8F5E9;
+            border-left: 4px solid #4CAF50;
+            color: #2E7D32;
+            display: block;
+        }
+
+        .status-message.error {
+            background-color: #FFEBEE;
+            border-left: 4px solid #D32F2F;
+            color: #C62828;
+            display: block;
+        }
+
+        .status-message.info {
+            background-color: #E3F2FD;
+            border-left: 4px solid #1976D2;
+            color: #1565c0;
+            display: block;
+        }
+
+        .info-section {
+            background-color: #F5F5F5;
+            border: 1px solid #E0E0E0;
+            border-radius: 6px;
+            padding: 20px;
+            margin-top: 30px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .info-section h3 {
+            color: #2E7D32;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .info-section ul {
+            margin-left: 20px;
+            margin-bottom: 10px;
+        }
+
+        .info-section li {
+            margin-bottom: 6px;
+            color: #555;
+        }
+
+        .code-example {
+            background-color: white;
+            border: 1px solid #DDD;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            overflow-x: auto;
+            margin-top: 8px;
+            color: #D32F2F;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .footer a {
+            color: #1976D2;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🐾 PVC Test Data Loader</h1>
+        <p class="subtitle">Load mock user accounts, pets, and appointments for testing</p>
+
+        <div class="warning-box">
+            ⚠️ <strong>Note:</strong> Loading test data will overwrite any existing data in your browser's storage. Make sure you don't have important data before loading test data.
+        </div>
+
+        <div id="status-message" class="status-message"></div>
+
+        <div class="button-group">
+            <button class="btn-load" onclick="loadTestData()">📥 Load Test Data</button>
+            <button class="btn-clear" onclick="clearAllData()">🗑️ Clear All Data</button>
+        </div>
+
+        <button class="btn-main" onclick="goToApp()">Go to PVC →</button>
+
+        <div class="test-users">
+            <h2>Available Test Accounts</h2>
+            <div class="user-card">
+                <div class="user-email">👤 alice.johnson@email.com</div>
+                <div>Password: <span class="user-password">password123</span></div>
+                <div class="user-pets"><strong>Pets:</strong> Max (Dog), Whiskers (Cat)</div>
+                <div class="user-pets"><strong>Assigned Vet:</strong> Vet 1</div>
+                <div class="user-pets"><strong>Appointments:</strong> 2 scheduled</div>
+            </div>
+
+            <div class="user-card">
+                <div class="user-email">👤 bob.smith@email.com</div>
+                <div>Password: <span class="user-password">password123</span></div>
+                <div class="user-pets"><strong>Pets:</strong> Buddy (Dog), Fluffy (Rabbit)</div>
+                <div class="user-pets"><strong>Assigned Vet:</strong> Vet 2</div>
+                <div class="user-pets"><strong>Appointments:</strong> 1 scheduled</div>
+            </div>
+
+            <div class="user-card">
+                <div class="user-email">👤 carol.williams@email.com</div>
+                <div>Password: <span class="user-password">password123</span></div>
+                <div class="user-pets"><strong>Pets:</strong> Mittens (Cat), Tweety (Bird), Nibbles (Hamster)</div>
+                <div class="user-pets"><strong>Assigned Vet:</strong> Vet 3</div>
+                <div class="user-pets"><strong>Appointments:</strong> 1 scheduled</div>
+            </div>
+
+            <div class="user-card">
+                <div class="user-email">👤 david.brown@email.com</div>
+                <div>Password: <span class="user-password">password123</span></div>
+                <div class="user-pets"><strong>Pets:</strong> Rex (Dog)</div>
+                <div class="user-pets"><strong>Assigned Vet:</strong> Vet 1</div>
+                <div class="user-pets"><strong>Appointments:</strong> 0 scheduled (new user)</div>
+            </div>
+
+            <div class="user-card">
+                <div class="user-email">👤 emma.davis@email.com</div>
+                <div>Password: <span class="user-password">password123</span></div>
+                <div class="user-pets"><strong>Pets:</strong> Luna (Cat), Hoppy & Jumpy (Rabbit bonded pair)</div>
+                <div class="user-pets"><strong>Assigned Vet:</strong> Vet 2</div>
+                <div class="user-pets"><strong>Appointments:</strong> 2 scheduled</div>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <h3>Test Scenarios Included</h3>
+            <ul>
+                <li><strong>New User (No Pets/Appointments):</strong> David Brown - test adding first pet and booking</li>
+                <li><strong>Established User:</strong> Alice Johnson - view dashboard with multiple pets and appointments</li>
+                <li><strong>Mobile Appointment:</strong> Bob Smith has a mobile vet appointment to test different appointment types</li>
+                <li><strong>Multiple Appointment Types:</strong> Various users with checkups, vaccinations, dental, and illness visits</li>
+                <li><strong>Multiple Branches:</strong> Appointments across Branch 1, Branch 2, and Branch 3</li>
+                <li><strong>Diverse Pet Species:</strong> Dogs, cats, rabbits, birds, and hamsters with varying medical needs</li>
+                <li><strong>Special Cases:</strong> Diabetic dog, senior cat, bonded rabbit pair for testing detailed pet management</li>
+            </ul>
+        </div>
+
+        <div class="info-section">
+            <h3>Test User Paths</h3>
+            <ul>
+                <li><strong>Path 1 - New User:</strong> Use David Brown → Dashboard → Add Pet → Book Appointment</li>
+                <li><strong>Path 2 - Return User:</strong> Use Alice Johnson → View existing pets/appointments</li>
+                <li><strong>Path 3 - Complex Medical:</strong> Use Bob Smith → Check diabetes management notes</li>
+                <li><strong>Path 4 - Multiple Pets:</strong> Use Emma Davis → Test bonded rabbits handling</li>
+                <li><strong>Path 5 - Diverse Clinic:</strong> Check different branch/vet combinations</li>
+            </ul>
+        </div>
+
+        <div class="info-section">
+            <h3>What Gets Loaded?</h3>
+            <ul>
+                <li>5 complete user accounts with full contact details</li>
+                <li>10 pets across various species with medical notes</li>
+                <li>6 pre-scheduled appointments with different types and branches</li>
+                <li>All data stored in browser's localStorage</li>
+                <li>Data persists until manually cleared or browser storage is reset</li>
+            </ul>
+        </div>
+
+        <div class="footer">
+            <p>Click "Load Test Data" above to populate the app with sample data, then visit the main app to test the interface.</p>
+            <p><a href="index.html" target="_blank">Open PVC App →</a></p>
+        </div>
+    </div>
+
+    <script>
+        function loadTestData() {
+            try {
+                // Fetch the test data file
+                fetch('test-data.json')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Could not load test-data.json');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        // Build the app state from test data
+                        const appState = {
+                            currentUser: null,
+                            users: {},
+                            pets: {},
+                            appointments: {},
+                            selectedTimeSlot: null
+                        };
+
+                        // Build users object
+                        data.testUsers.forEach((user, index) => {
+                            const userId = 'user_' + (index + 1);
+                            appState.users[user.email] = {
+                                id: userId,
+                                firstName: user.firstName,
+                                lastName: user.lastName,
+                                email: user.email,
+                                phone: user.phone,
+                                address: user.address,
+                                city: user.city,
+                                password: user.password,
+                                assignedVet: user.assignedVet
+                            };
+                        });
+
+                        // Add pets and appointments
+                        appState.pets = data.testPets;
+                        appState.appointments = data.testAppointments;
+
+                        // Save to localStorage
+                        localStorage.setItem('vetClinicAppState', JSON.stringify(appState));
+
+                        // Show success message
+                        showMessage('✅ Test data loaded successfully! ' + data.testUsers.length + ' users, ' + 
+                            Object.values(data.testPets).flat().length + ' pets, and ' +
+                            Object.values(data.testAppointments).flat().length + ' appointments are ready to test.', 'success');
+
+                        // Show instructions
+                        setTimeout(() => {
+                            showMessage('💡 You can now open the main app and login with any of the test accounts.', 'info');
+                        }, 2000);
+                    })
+                    .catch(error => {
+                        showMessage('❌ Error loading test data: ' + error.message, 'error');
+                    });
+            } catch (error) {
+                showMessage('❌ Error: ' + error.message, 'error');
+            }
+        }
+
+        function clearAllData() {
+            if (confirm('Are you sure you want to delete all data? This cannot be undone.')) {
+                try {
+                    localStorage.removeItem('vetClinicAppState');
+                    showMessage('🗑️ All data has been cleared from storage.', 'success');
+                    setTimeout(() => {
+                        showMessage('💡 You can now load fresh test data or create your own accounts.', 'info');
+                    }, 2000);
+                } catch (error) {
+                    showMessage('❌ Error clearing data: ' + error.message, 'error');
+                }
+            }
+        }
+
+        function goToApp() {
+            window.open('index.html', '_blank');
+        }
+
+        function showMessage(text, type) {
+            const messageEl = document.getElementById('status-message');
+            messageEl.textContent = text;
+            messageEl.className = 'status-message ' + type;
+            setTimeout(() => {
+                messageEl.className = 'status-message';
+            }, 5000);
+        }
+
+        // Check if data is already loaded
+        window.addEventListener('load', function() {
+            const stored = localStorage.getItem('vetClinicAppState');
+            if (stored) {
+                try {
+                    const data = JSON.parse(stored);
+                    if (Object.keys(data.users).length > 0) {
+                        showMessage('ℹ️ Test data is already loaded. You can load new data (which will overwrite existing) or clear and start fresh.', 'info');
+                    }
+                } catch (e) {
+                    // Ignore parse errors
+                }
+            }
+        });
+    </script>
+</body>
+</html>

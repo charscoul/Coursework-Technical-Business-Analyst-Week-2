@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PVC - Veterinary Clinic</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Landing Page -->
+        <div id="landing-page" class="page active">
+            <div class="landing-content">
+                <div class="logo">🐾</div>
+                <h1>PVC</h1>
+                <p class="tagline">Veterinary Care for Your Pets</p>
+                
+                <div class="landing-description">
+                    <p>Schedule appointments for your beloved pets with ease. Professional veterinary care at your fingertips.</p>
+                </div>
+                
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="navigateTo('login')">Login</button>
+                    <button class="btn btn-secondary" onclick="navigateTo('register')">New Customer</button>
+                </div>
+                
+                <div class="emergency-banner">
+                    <p>🚨 <strong>Emergency?</strong> <a href="#" onclick="navigateTo('emergency'); return false;">Click here for emergency appointments</a></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Register Page -->
+        <div id="register-page" class="page">
+            <div class="form-container">
+                <h2>Create Your Account</h2>
+                
+                <form id="register-form" onsubmit="handleRegister(event)">
+                    <div class="form-group">
+                        <label for="reg-firstName">First Name *</label>
+                        <input type="text" id="reg-firstName" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="reg-lastName">Last Name *</label>
+                        <input type="text" id="reg-lastName" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="reg-email">Email Address *</label>
+                        <input type="email" id="reg-email" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="reg-phone">Phone Number *</label>
+                        <input type="tel" id="reg-phone" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="reg-address">Address *</label>
+                        <input type="text" id="reg-address" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="reg-city">City *</label>
+                        <input type="text" id="reg-city" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="reg-password">Password *</label>
+                        <input type="password" id="reg-password" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="reg-password-confirm">Confirm Password *</label>
+                        <input type="password" id="reg-password-confirm" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Create Account</button>
+                </form>
+                
+                <p class="form-footer">Already have an account? <a href="#" onclick="navigateTo('login'); return false;">Login here</a></p>
+                <p><a href="#" onclick="navigateTo('landing'); return false;">← Back to Home</a></p>
+            </div>
+        </div>
+
+        <!-- Login Page -->
+        <div id="login-page" class="page">
+            <div class="form-container">
+                <h2>Login to PVC</h2>
+                
+                <form id="login-form" onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label for="login-email">Email Address</label>
+                        <input type="email" id="login-email" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="login-password">Password</label>
+                        <input type="password" id="login-password" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Login</button>
+                </form>
+                
+                <p class="form-footer">
+                    <a href="#" onclick="navigateTo('password-recovery'); return false;">Forgot Password?</a>
+                </p>
+                
+                <p class="form-footer">
+                    Don't have an account? <a href="#" onclick="navigateTo('register'); return false;">Register here</a>
+                </p>
+                
+                <p><a href="#" onclick="navigateTo('landing'); return false;">← Back to Home</a></p>
+            </div>
+        </div>
+
+        <!-- Password Recovery Page -->
+        <div id="password-recovery-page" class="page">
+            <div class="form-container">
+                <h2>Password Recovery</h2>
+                
+                <p class="info-text">Enter your email address and we'll send you a password reset link.</p>
+                
+                <form id="recovery-form" onsubmit="handlePasswordRecovery(event)">
+                    <div class="form-group">
+                        <label for="recovery-email">Email Address</label>
+                        <input type="email" id="recovery-email" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Send Reset Link</button>
+                </form>
+                
+                <p class="form-footer">
+                    <a href="#" onclick="navigateTo('login'); return false;">Back to Login</a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Dashboard Page -->
+        <div id="dashboard-page" class="page">
+            <div class="header-bar">
+                <h1>Welcome, <span id="dashboard-name"></span>!</h1>
+                <button class="btn btn-small" onclick="handleLogout()">Logout</button>
+            </div>
+            
+            <div class="dashboard-content">
+                <section class="dashboard-section">
+                    <h2>Your Pets</h2>
+                    <div id="pets-list" class="pets-grid">
+                        <!-- Pets will be populated here -->
+                    </div>
+                    <button class="btn btn-secondary" onclick="navigateTo('pets')">+ Add or Manage Pets</button>
+                </section>
+                
+                <section class="dashboard-section">
+                    <h2>Upcoming Appointments</h2>
+                    <div id="appointments-list" class="appointments-list">
+                        <!-- Appointments will be populated here -->
+                    </div>
+                    <button class="btn btn-primary" onclick="navigateTo('appointments')">Book New Appointment</button>
+                </section>
+            </div>
+        </div>
+
+        <!-- Pet Management Page -->
+        <div id="pets-page" class="page">
+            <div class="header-bar">
+                <h2>Pet Management</h2>
+                <button class="btn btn-small" onclick="navigateTo('dashboard')">← Back to Dashboard</button>
+            </div>
+            
+            <div class="form-container">
+                <h3>Add or Update Pet Information</h3>
+                
+                <form id="pet-form" onsubmit="handlePetSubmit(event)">
+                    <div class="form-group">
+                        <label for="pet-name">Pet Name *</label>
+                        <input type="text" id="pet-name" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="pet-species">Species *</label>
+                            <select id="pet-species" required>
+                                <option value="">Select Species</option>
+                                <option value="Dog">Dog</option>
+                                <option value="Cat">Cat</option>
+                                <option value="Rabbit">Rabbit</option>
+                                <option value="Hamster">Hamster</option>
+                                <option value="Bird">Bird</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="pet-breed">Breed</label>
+                            <input type="text" id="pet-breed">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="pet-age">Age (years) *</label>
+                            <input type="number" id="pet-age" min="0" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="pet-weight">Weight (kg)</label>
+                            <input type="number" id="pet-weight" step="0.1">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="pet-medical-notes">Medical Notes / Allergies</label>
+                        <textarea id="pet-medical-notes" rows="4"></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Save Pet</button>
+                </form>
+                
+                <div id="pets-summary" class="pets-summary">
+                    <h3>Your Pets</h3>
+                    <div id="pets-summary-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Appointment Booking Page -->
+        <div id="appointments-page" class="page">
+            <div class="header-bar">
+                <h2>Book an Appointment</h2>
+                <button class="btn btn-small" onclick="navigateTo('dashboard')">← Back to Dashboard</button>
+            </div>
+            
+            <div class="form-container">
+                <form id="appointment-form" onsubmit="handleAppointmentSubmit(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="apt-branch">Select Clinic Branch *</label>
+                            <select id="apt-branch" required onchange="updateVeterinarians()">
+                                <option value="">Choose a branch...</option>
+                                <option value="branch-1">Branch 1</option>
+                                <option value="branch-2">Branch 2</option>
+                                <option value="branch-3">Branch 3</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="apt-type">Appointment Type *</label>
+                            <select id="apt-type" required>
+                                <option value="">Choose type...</option>
+                                <option value="in-clinic">In-Clinic Visit</option>
+                                <option value="mobile">Mobile Vet Visit</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="apt-vet">Select Veterinarian</label>
+                            <select id="apt-vet">
+                                <option value="any">Any Available</option>
+                                <option value="vet-1">Vet 1</option>
+                                <option value="vet-2">Vet 2</option>
+                                <option value="vet-3">Vet 3</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="apt-reason">Reason for Visit *</label>
+                            <select id="apt-reason" required>
+                                <option value="">Select reason...</option>
+                                <option value="checkup">Regular Checkup</option>
+                                <option value="vaccination">Vaccination</option>
+                                <option value="dental">Dental Care</option>
+                                <option value="illness">Illness/Injury</option>
+                                <option value="grooming">Grooming</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="apt-pet">Select Pet *</label>
+                        <select id="apt-pet" required>
+                            <option value="">Choose your pet...</option>
+                            <!-- Pets will be populated from saved data -->
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="apt-date">Preferred Date *</label>
+                        <input type="date" id="apt-date" required>
+                    </div>
+                    
+                    <div class="calendar-view" id="calendar-view">
+                        <h3>Available Times</h3>
+                        <div id="time-slots" class="time-slots">
+                            <!-- Time slots will be populated here -->
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="apt-notes">Additional Notes</label>
+                        <textarea id="apt-notes" rows="3" placeholder="Any additional information about your pet or appointment..."></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Confirm Appointment</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Emergency Appointment Page -->
+        <div id="emergency-page" class="page">
+            <div class="header-bar">
+                <h2>Emergency Appointment</h2>
+                <button class="btn btn-small" onclick="navigateTo('landing')">← Back to Home</button>
+            </div>
+            
+            <div class="emergency-container">
+                <div class="emergency-alert">
+                    <h3>🚨 Emergency Veterinary Care</h3>
+                    <p>If your pet requires immediate emergency care, please call our emergency hotline immediately:</p>
+                    
+                    <div class="emergency-contact">
+                        <p class="emergency-phone"><strong>📞 +1 (555) 123-9999</strong></p>
+                        <p class="emergency-hours"><strong>Available 24/7</strong></p>
+                    </div>
+                    
+                    <p>Our emergency line connects you directly to an available veterinarian who can provide immediate guidance and schedule an urgent appointment.</p>
+                </div>
+                
+                <div class="emergency-form-section">
+                    <h3>Schedule an Emergency Callback</h3>
+                    <p>If you'd prefer, leave your information and we'll call you back within 10 minutes:</p>
+                    
+                    <form id="emergency-form" onsubmit="handleEmergencySubmit(event)">
+                        <div class="form-group">
+                            <label for="emergency-name">Your Name *</label>
+                            <input type="text" id="emergency-name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="emergency-phone">Phone Number *</label>
+                            <input type="tel" id="emergency-phone" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="emergency-pet">Pet Name *</label>
+                            <input type="text" id="emergency-pet" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="emergency-issue">Describe the Emergency *</label>
+                            <textarea id="emergency-issue" rows="4" required placeholder="Describe your pet's symptoms or situation..."></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Request Callback</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success Message -->
+        <div id="success-message" class="success-message">
+            <span id="success-text"></span>
+            <button onclick="closeMessage()">✕</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

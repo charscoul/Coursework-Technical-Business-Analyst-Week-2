@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Legacy Trust Bank - Smart Recovery Portal</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Top Tester Helper Bar (for effortless demonstration of all happy & exception paths) -->
+  <aside class="test-switcher-bar" aria-label="Demo Persona Switcher">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span class="label">Interactive Demo Persona:</span>
+      <select id="quick-test-user">
+        <option value="">-- Select a test account profile --</option>
+      </select>
+    </div>
+    <div style="font-size: 11px; color: #94a3b8;">
+      Legacy Trust Bank &bull; Smart Recovery Portal v1.0 (Phase 1 Prototype)
+    </div>
+  </aside>
+
+  <!-- Site Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand-block">
+        <span class="bank-name">Legacy Trust Bank</span>
+        <span class="portal-tag">Smart Recovery &bull; Account Resolution Portal</span>
+      </div>
+
+      <!-- Post-login session details and timer -->
+      <div class="session-bar" id="session-bar" style="display: none;">
+        <div class="session-info">
+          <span class="user-badge" id="session-user-name">Customer</span>
+          <span class="timer-badge">Session expires in: <strong id="session-timer-display">03:00</strong></span>
+        </div>
+        <button type="button" class="btn btn-outline btn-sm" id="btn-end-session">End Session</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Wrapper -->
+  <main class="main-wrapper">
+
+    <!-- ========================================================================== -->
+    <!-- SCREEN 1: LANDING / ENTRY PAGE                                              -->
+    <!-- • Related Story IDs: US-01 (KAN-18), US-15 (KAN-32)                        -->
+    <!-- • Key Data Shown: Portal scope overview, self-service benefits, security     -->
+    <!--   encryption badge, regulatory FCA notice                                   -->
+    <!-- • Validation / Business Rules: Zero customer debt data displayed before      -->
+    <!--   successful identity verification (clean unauthenticated state)             -->
+    <!-- • Next Steps Possible:                                                      -->
+    <!--   - "Sign In & Verify Identity" -> Navigates to Screen 2 (Identity Verify)  -->
+    <!--   - "Request a Representative Call" -> Navigates to Screen 8 (Rep Routing)  -->
+    <!--   - "Report Financial Difficulty" (Footer) -> Navigates to Screen 9 (Vuln)  -->
+    <!-- ========================================================================== -->
+    <section id="view-landing" class="portal-view active">
+      <div class="card">
+        <h1 class="card-title">Manage Your Overdue Account Securely</h1>
+        <p class="card-subtitle">
+          If you have received a letter, email, or SMS regarding an overdue balance on your Legacy Trust Bank account, 
+          you can securely view your status, check available repayment arrangements, or set a promise to pay online 24/7.
+        </p>
+
+        <div class="alert alert-info">
+          <div>
+            <strong>Self-Service Benefits:</strong> Accessing your account online will never add additional fees or interest. 
+            Once you establish an agreed repayment plan or promise to pay, outbound collection calls are immediately paused.
+          </div>
+        </div>
+
+        <div class="button-group" style="margin-top: 32px;">
+          <button type="button" class="btn btn-primary" id="btn-landing-login" style="padding: 12px 28px; font-size: 15px;">
+            Sign In &amp; Verify Identity
+          </button>
+          <button type="button" class="btn btn-secondary" id="btn-landing-call" style="padding: 12px 24px;">
+            Request a Representative Call
+          </button>
+        </div>
+
+        <div class="security-notice" style="margin-top: 32px;">
+          <span>🔒 256-bit encrypted banking session &bull; Regulated by the Financial Conduct Authority (FCA)</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================== -->
+    <!-- SCREEN 2: LOGIN / IDENTITY VERIFICATION                                     -->
+    <!-- • Related Story IDs: US-01 (KAN-18), US-02 (KAN-19)                        -->
+    <!-- • Key Data Shown: Identifier input (email/phone), 8-digit Account Number,   -->
+    <!--   auth method selector (Password vs SMS), 3-attempt warning alert           -->
+    <!-- • Validation / Business Rules:                                              -->
+    <!--   - Match identifier + account number + credential against bank records      -->
+    <!--   - Enforce 3-attempt limit: failures decrement counter                     -->
+    <!--   - On 3rd failure: lock self-service and auto-route to Screen 8 with reason -->
+    <!--     "forgot login details" autofilled (BPMN Gateway_1im7526)                -->
+    <!-- • Next Steps Possible:                                                      -->
+    <!--   - Successful verification -> Navigates to Screen 3 (Account Summary)       -->
+    <!--   - 1st/2nd Failed attempt -> Re-renders with remaining attempts alert      -->
+    <!--   - 3rd Failed attempt -> Auto-routes to Screen 8 (Rep Callback Routing)     -->
+    <!--   - "Cancel" -> Returns to Screen 1 (Landing Page)                           -->
+    <!--   - "Report Financial Difficulty" (Footer) -> Navigates to Screen 9 (Vuln)  -->
+    <!-- ========================================================================== -->
+    <section id="view-login" class="portal-view">
+      <div class="card" style="max-width: 580px; margin: 0 auto;">
+        <h1 class="card-title">Sign In &amp; Verify Identity</h1>
+        <p class="card-subtitle">
+          To protect your confidential financial records, please verify your identity before accessing your account details.
+        </p>
+
+        <!-- Variation 2B: Verification Failure Alert (Displays when attempts < 3) -->
+        <div id="login-alert" class="alert alert-danger" style="display: none;"></div>
+
+        <form id="form-login">
+          <div class="form-group">
+            <label class="form-label" for="login-identifier">Email Address or Mobile Phone Number</label>
+            <input type="text" id="login-identifier" class="form-control" placeholder="e.g. sarah.jenkins@example.com or 07700900123" required>
+            <div class="form-help">Enter the phone number or email registered with your Legacy Trust Bank account.</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="login-account">Account Reference Number (8 Digits)</label>
+            <input type="text" id="login-account" class="form-control" placeholder="e.g. 10023456" maxlength="8" required>
+            <div class="form-help">As printed on your statement, letter, or notification SMS.</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="login-method">Authentication Method</label>
+            <select id="login-method" class="form-control">
+              <option value="password">Online Banking Password</option>
+              <option value="sms">SMS One-Time Passcode</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="group-password">
+            <label class="form-label" for="login-password">Password</label>
+            <input type="password" id="login-password" class="form-control" placeholder="Enter your banking password">
+          </div>
+
+          <div class="form-group" id="group-sms" style="display: none;">
+            <label class="form-label" for="login-sms">SMS Passcode (4 Digits)</label>
+            <input type="text" id="login-sms" class="form-control" placeholder="e.g. 4421" maxlength="6">
+            <div class="form-help">A one-time code sent to your registered mobile device.</div>
+          </div>
+
+          <div class="alert alert-warning" style="font-size: 13px; margin-top: 16px;">
+            <span>⚠️ <strong>Security Notice:</strong> You have 3 attempts to verify your details. After 3 unsuccessful attempts, self-service is locked and you will be routed to a representative.</span>
+          </div>
+
+          <div class="button-group">
+            <button type="submit" class="btn btn-primary">Verify &amp; Continue</button>
+            <button type="button" class="btn btn-outline" onclick="navigateTo('landing')">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ========================================================================== -->
+    <!-- SCREEN 3: ACCOUNT SUMMARY & RESOLUTION STATUS                                -->
+    <!-- • Related Story IDs: US-05 (KAN-22), US-06 (KAN-23), US-17 (KAN-34),        -->
+    <!--   US-18 (KAN-35)                                                            -->
+    <!-- • Key Data Shown: Total balance, overdue arrears amount, arrears stage,     -->
+    <!--   account reference, tabbed schedule / audit history                        -->
+    <!-- • Validation / Business Rules: Only rendered after successful identity      -->
+    <!--   verification. Evaluates account state into one of three plan variations:  -->
+    <!--   (A: Active Plan, B: Eligible No Plan, C: Ineligible High-Risk)            -->
+    <!-- • Next Steps Possible:                                                      -->
+    <!--   - If eligible & no plan: "Arrange a Plan" -> Screen 4 (Plan Selection)   -->
+    <!--   - "Request Representative Guidance" -> Screen 8 (Rep Callback Form)       -->
+    <!--   - "End Session" (Header) -> Clears session & returns to Screen 1          -->
+    <!--   - "Report Financial Difficulty" (Footer) -> Screen 9 (Vulnerability)      -->
+    <!-- ========================================================================== -->
+    <section id="view-summary" class="portal-view">
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;">
+          <div>
+            <h1 class="card-title" style="margin-bottom: 4px;">Account Overview: <span id="sum-customer-name">Customer</span></h1>
+            <div style="font-size: 14px; color: var(--color-text-muted);">
+              Account Reference: <strong id="sum-account-number" style="color: var(--color-text);">10023456</strong>
+            </div>
+          </div>
+          <div>
+            <span class="badge badge-neutral" id="sum-status">Arrears Status</span>
+          </div>
+        </div>
+
+        <!-- Metrics Grid -->
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-label">Total Outstanding Balance</div>
+            <div class="metric-value" id="sum-balance">£0.00</div>
+            <div class="metric-sub">Includes principal and past charges</div>
+          </div>
+          <div class="metric-card highlight">
+            <div class="metric-label">Overdue Arrears</div>
+            <div class="metric-value arrears" id="sum-arrears">£0.00</div>
+            <div class="metric-sub">Immediate action required</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Repayment Status</div>
+            <div style="margin-top: 8px;">
+              <span id="plan-status-indicator" class="badge badge-danger">No Active Plan</span>
+            </div>
+            <div class="metric-sub" id="plan-status-sub" style="margin-top: 10px;">Self-service resolution active</div>
+          </div>
+        </div>
+
+        <!-- Tabs Navigation -->
+        <div class="tabs-header">
+          <button type="button" class="tab-btn active" data-tab="plans" id="tab-btn-plans">
+            <span id="tab-plan-label">Agreed Plans</span>
+          </button>
+          <button type="button" class="tab-btn" data-tab="contact" id="tab-btn-contact">
+            <span>Contact &amp; Notice History</span>
+          </button>
+        </div>
+
+        <!-- Tab 1: Agreed Plans / Arrange Plan Pane -->
+        <div class="tab-pane active" id="tab-pane-plans">
+
+          <!-- -------------------------------------------------------------------- -->
+          <!-- VARIATION 3A: ACTIVE REPAYMENT PLAN IN PLACE (e.g. Elena Rostova)    -->
+          <!-- • Related Story IDs: US-05 (KAN-22), US-06 (KAN-23)                  -->
+          <!-- • Key Data Shown: Agreement name, instalment amount, frequency,      -->
+          <!--   next debit date, instalment progress (X of Y), remaining debt      -->
+          <!-- • Validation / Business Rules: "Arrange a Plan" button suppressed;   -->
+          <!--   deflects routine balance inquiries without agent intervention      -->
+          <!-- • Next Steps: Review schedule, review contact tab, end session       -->
+          <!-- -------------------------------------------------------------------- -->
+          <div id="existing-plan-container" style="display: none;">
+            <div class="alert alert-success">
+              <div>
+                <strong>Active Repayment Agreement in Place:</strong> You have an ongoing agreed arrangement for this account.
+              </div>
+            </div>
+
+            <div class="summary-list">
+              <div class="summary-row">
+                <span class="summary-label">Agreement Type</span>
+                <span class="summary-value" id="active-plan-name">4-Month Catch-Up Plan</span>
+              </div>
+              <div class="summary-row">
+                <span class="summary-label">Instalment Amount &amp; Frequency</span>
+                <span class="summary-value" id="active-plan-instalment">£70.00 / Monthly</span>
+              </div>
+              <div class="summary-row">
+                <span class="summary-label">Next Scheduled Payment Date</span>
+                <span class="summary-value" id="active-plan-next-date">2026-10-25</span>
+              </div>
+              <div class="summary-row">
+                <span class="summary-label">Progress</span>
+                <span class="summary-value" id="active-plan-progress">2 of 4 instalments completed</span>
+              </div>
+              <div class="summary-row total">
+                <span class="summary-label">Remaining Under Agreement</span>
+                <span class="summary-value" id="active-plan-remaining">£140.00</span>
+              </div>
+            </div>
+
+            <p style="font-size: 13px; color: var(--color-text-muted); margin-top: 12px;">
+              Your next direct payment will be processed automatically on the date indicated above. If you need to make changes, please speak with an agent.
+            </p>
+          </div>
+
+          <!-- -------------------------------------------------------------------- -->
+          <!-- VARIATION 3B: NO ACTIVE PLAN - ELIGIBLE FOR PORTAL (e.g. Sarah J.)   -->
+          <!-- • Related Story IDs: US-05 (KAN-22), US-06 (KAN-23), US-08 (KAN-25)  -->
+          <!-- • Key Data Shown: Red "No Active Plan" warning, prompt to arrange     -->
+          <!-- • Validation / Business Rules: Account is within eligible arrears    -->
+          <!--   limits (<90 days, no complex legal hold)                           -->
+          <!-- • Next Steps:                                                        -->
+          <!--   - "Arrange a Plan" -> Navigates to Screen 4 (Plan Selection)       -->
+          <!--   - "Request Representative Guidance" -> Screen 8 (Callback form)    -->
+          <!-- -------------------------------------------------------------------- -->
+          <div id="no-plan-container">
+            <div class="alert alert-danger">
+              <div>
+                <strong>No Active Repayment Plan:</strong> This account currently has an unresolved overdue balance. 
+                Setting up a structured repayment plan will prevent formal collections escalation and freeze additional fees.
+              </div>
+            </div>
+
+            <div class="button-group">
+              <button type="button" class="btn btn-primary" id="btn-arrange-plan">
+                Arrange a Plan
+              </button>
+              <button type="button" class="btn btn-secondary" id="btn-summary-request-call">
+                Request Representative Guidance
+              </button>
+            </div>
+          </div>
+
+          <!-- -------------------------------------------------------------------- -->
+          <!-- VARIATION 3C: INELIGIBLE FOR ONLINE PLAN SELECTION (e.g. David O.)   -->
+          <!-- • Related Story IDs: US-06 (KAN-23), US-08 (KAN-25), US-13 (KAN-30)  -->
+          <!-- • Key Data Shown: Ineligibility reason code, credit policy warning,  -->
+          <!--   three explicit next-step options, direct telephone contact info    -->
+          <!-- • Validation / Business Rules:                                       -->
+          <!--   - "Arrange a Plan" button is strictly suppressed (BPMN Gateway_17jcpgs)-->
+          <!--   - Arrears >= 90 days or Stage 3 pre-legal escalation threshold     -->
+          <!-- • Next Steps:                                                        -->
+          <!--   - "Request Specialist Callback" -> Screen 8 with context autofilled-->
+          <!--   - "Report Financial Difficulty" -> Screen 9 (Vulnerability form)   -->
+          <!-- -------------------------------------------------------------------- -->
+          <div id="ineligible-plan-container" style="display: none;">
+            <div class="alert alert-warning">
+              <div>
+                <strong>Online Repayment Arrangement Unavailable</strong>
+                <p style="margin-top: 6px;" id="ineligible-reason-text">
+                  This account is not eligible for automated self-service plan selection under bank credit policy.
+                </p>
+              </div>
+            </div>
+
+            <div style="background-color: #fafbfc; border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 20px; margin-bottom: 20px;">
+              <h2 style="font-size: 15px; font-weight: 700; color: var(--color-primary-dark); margin-bottom: 12px;">
+                Why can I not set up a plan online?
+              </h2>
+              <p style="font-size: 14px; line-height: 1.5; color: var(--color-text); margin-bottom: 16px;">
+                Due to the arrears status or balance on this account, automated repayment templates cannot be offered. A collections specialist must review your file directly to determine acceptable terms or assess potential legal escalation holds.
+              </p>
+
+              <h2 style="font-size: 15px; font-weight: 700; color: var(--color-primary-dark); margin-bottom: 10px;">
+                Your Available Options:
+              </h2>
+              <ol style="padding-left: 20px; font-size: 14px; line-height: 1.6; color: var(--color-text);">
+                <li style="margin-bottom: 10px;">
+                  <strong>Request a Specialist Callback:</strong> Submit your contact details below. A representative will review your preserved account context and call you during your requested window.
+                </li>
+                <li style="margin-bottom: 10px;">
+                  <strong>Report Financial Difficulty:</strong> If you are experiencing serious financial hardship, redundancy, or health complications, submit a notification to request a statutory 30-day breathing space.
+                </li>
+                <li>
+                  <strong>Call Our Recovery Team Directly:</strong> You can reach the Specialist Recovery Department on <strong>0800 012 3456</strong> (Mon–Fri 8:00–19:00, Sat 9:00–14:00), quoting account reference <strong id="ineligible-account-ref"></strong>.
+                </li>
+              </ol>
+            </div>
+
+            <div class="button-group">
+              <button type="button" class="btn btn-primary" id="btn-ineligible-request-call">
+                Request Specialist Callback
+              </button>
+              <button type="button" class="btn btn-danger-outline" id="btn-ineligible-report-difficulty">
+                Report Financial Difficulty
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ---------------------------------------------------------------------- -->
+        <!-- TAB 2: CONTACT & NOTICE AUDIT HISTORY                                  -->
+        <!-- • Related Story IDs: US-17 (KAN-34), US-18 (KAN-35)                   -->
+        <!-- • Key Data Shown: Chronological table of notices, SMS, calls, PTPs,    -->
+        <!--   and vulnerability holds with timestamps                              -->
+        <!-- • Validation / Business Rules: Immutable audit trail fetched from bank  -->
+        <!--   records; gives user and reps transparent context                     -->
+        <!-- ---------------------------------------------------------------------- -->
+        <div class="tab-pane" id="tab-pane-contact">
+          <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 14px;">
+            Chronological audit record of recent communications, automated notices, and account interactions.
+          </p>
+          <div style="overflow-x: auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width: 160px;">Date &amp; Time</th>
+                  <th style="width: 140px;">Channel / Event</th>
+                  <th>Summary &amp; Audit Description</th>
+                </tr>
+              </thead>
+              <tbody id="contact-history-tbody">
+                <!-- Dynamically populated from account history -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================== -->
+    <!-- SCREEN 4: PAYMENT PLAN SELECTION                                            -->
+    <!-- • Related Story IDs: US-08 (KAN-25), US-09 (KAN-26), US-13 (KAN-30)         -->
+    <!-- • Key Data Shown: Arrears amount, pre-approved plan cards (name, instalment,-->
+    <!--   frequency, duration, total repayable)                                     -->
+    <!-- • Validation / Business Rules: Plans are simplified templates matched to    -->
+    <!--   the customer's debt tier. Ineligible plans suppressed.                    -->
+    <!-- • Next Steps Possible:                                                      -->
+    <!--   - "Select this plan" -> Navigates to Screen 5 (Plan Details / Schedule)   -->
+    <!--   - "Not happy with these options? Request a rep" -> Screen 8 with context  -->
+    <!--   - "Back to Account Summary" -> Returns to Screen 3                        -->
+    <!--   - "Report Financial Difficulty" (Footer) -> Screen 9                      -->
+    <!-- ========================================================================== -->
+    <section id="view-plans" class="portal-view">
+      <div class="card">
+        <h1 class="card-title">Select a Repayment Plan</h1>
+        <p class="card-subtitle">
+          Based on your outstanding debt of <strong id="plans-arrears-amount">£0.00</strong> in arrears, 
+          the following structured repayment options are available for your account. 
+          Select an option to resolve your balance.
+        </p>
+
+        <!-- Plans cards grid -->
+        <div class="plans-grid" id="plans-list-container">
+          <!-- Dynamically populated based on current user eligibility -->
+        </div>
+
+        <!-- Dissatisfied / Rep Routing Action as required -->
+        <div style="border-top: 1px solid var(--color-border-light); padding-top: 20px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+          <div style="font-size: 14px; color: var(--color-text-muted);">
+            Unable to commit to any of these repayment terms? You can speak with a representative who may be able to help.
+          </div>
+          <button type="button" class="btn btn-outline" id="btn-plans-unhappy">
+            Not happy with these options? Request a representative
+          </button>
+        </div>
+
+        <div style="margin-top: 20px;">
+          <button type="button" class="btn btn-outline btn-sm" onclick="navigateTo('summary')">
+            &larr; Back to Account Summary
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================== -->
+    <!-- SCREEN 5: PLAN DETAILS & SCHEDULE CONFIRMATION                              -->
+    <!-- • Related Story IDs: US-09 (KAN-26), US-10 (KAN-27)                         -->
+    <!-- • Key Data Shown: Selected plan name, monthly instalment, total duration,   -->
+    <!--   arrears cleared, full table of monthly payment due dates & amounts        -->
+    <!-- • Validation / Business Rules: Customer must tick statutory acknowledgment  -->
+    <!--   checkbox. Attempting to click "Confirm Plan" without ticking triggers      -->
+    <!--   the Acknowledgment Required modal popup (#modal-ack-required)             -->
+    <!-- • Next Steps Possible:                                                      -->
+    <!--   - Validated click on "Confirm Plan" -> Navigates to Screen 6 (PTP Capture)-->
+    <!--   - "Change Plan" -> Returns to Screen 4 (Plan Selection)                   -->
+    <!--   - "Report Financial Difficulty" (Footer) -> Screen 9                      -->
+    <!-- ========================================================================== -->
+    <section id="view-plan-details" class="portal-view">
+      <div class="card" style="max-width: 680px; margin: 0 auto;">
+        <h1 class="card-title">Review Plan Details</h1>
+        <p class="card-subtitle">
+          Please review the binding repayment schedule below before proceeding to confirm your commitment.
+        </p>
+
+        <div class="summary-list">
+          <div class="summary-row">
+            <span class="summary-label">Selected Plan</span>
+            <span class="summary-value" id="confirm-plan-name">Plan Name</span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">Monthly Instalment</span>
+            <span class="summary-value" id="confirm-instalment">£0.00</span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">Duration</span>
+            <span class="summary-value" id="confirm-duration">0 Months</span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">Overdue Arrears to Clear</span>
+            <span class="summary-value" id="confirm-arrears-cleared">£0.00</span>
+          </div>
+          <div class="summary-row total">
+            <span class="summary-label">Total Repayable (Zero Added Fees)</span>
+            <span class="summary-value" id="confirm-total">£0.00</span>
+          </div>
+        </div>
+
+        <h2 style="font-size: 15px; font-weight: 600; margin: 20px 0 10px 0; color: var(--color-primary-dark);">
+          Proposed Instalment Schedule
+        </h2>
+
+        <div style="max-height: 220px; overflow-y: auto; border: 1px solid var(--color-border-light); border-radius: var(--radius-sm); margin-bottom: 20px;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Payment</th>
+                <th>Due Date</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody id="plan-schedule-tbody">
+              <!-- Dynamically populated instalments -->
+            </tbody>
+          </table>
+        </div>
+
+        <label class="checkbox-label">
+          <input type="checkbox" id="plan-ack-checkbox">
+          <span>
+            I acknowledge that I have reviewed the repayment schedule and agree to make the required payments according to the dates set out above.
+          </span>
+        </label>
+
+        <div class="button-group">
+          <button type="button" class="btn btn-primary" id="btn-proceed-to-ptp">
+            Confirm Plan &amp; Proceed to Promise to Pay
+          </button>
+          <button type="button" class="btn btn-outline" onclick="navigateTo('plans')">
+            Change Plan
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================== -->
+    <!-- SCREEN 6: DIGITAL PROMISE-TO-PAY & ELECTRONIC SIGNATURE                     -->
+    <!-- • Related Story IDs: US-10 (KAN-27), US-11 (KAN-28), US-12 (KAN-29)         -->
+    <!-- • Key Data Shown: Plan commitment amount, due date input within 30 days,    -->
+    <!--   payment method select, e-signature input, live cursive preview, legal     -->
+    <!--   consent under Electronic Communications Act 2000                          -->
+    <!-- • Validation / Business Rules: Minimum threshold payment required; date     -->
+    <!--   must be within 30 days; full legal name signature & checkbox required     -->
+    <!-- • Next Steps Possible:                                                      -->
+    <!--   - "Submit Promise to Pay & Finalise" -> Screen 7 (Agreement Confirmed)    -->
+    <!--   - "Back" -> Returns to Screen 5 (Plan Details)                            -->
+    <!--   - "Report Financial Difficulty" (Footer) -> Screen 9                      -->
+    <!-- ========================================================================== -->
+    <section id="view-ptp" class="portal-view">
+      <div class="card" style="max-width: 620px; margin: 0 auto;">
+        <h1 class="card-title">Digital Promise-to-Pay</h1>
+        <p class="card-subtitle">
+          Confirm the initial payment commitment for your plan (<strong id="ptp-plan-name">Selected Plan</strong>).
+        </p>
+
+        <div class="alert alert-info">
+          <div>
+            <strong>Legal Commitment &amp; Call Hold:</strong> Committing to a Promise to Pay formally schedules your payment 
+            and automatically pauses all outbound recovery calls and letters until your agreed payment date.
+          </div>
+        </div>
+
+        <form id="form-ptp">
+          <div class="form-group">
+            <label class="form-label" for="ptp-amount">Promised Payment Amount (£)</label>
+            <input type="number" step="0.01" min="10" id="ptp-amount" class="form-control" required>
+            <div class="form-help">Pre-filled with your agreed monthly instalment amount.</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="ptp-date">Payment Due Date</label>
+            <input type="date" id="ptp-date" class="form-control" required>
+            <div class="form-help">Please select a date within the next 30 days (aligned with your income schedule).</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="ptp-method">Intended Payment Method</label>
+            <select id="ptp-method" class="form-control" required>
+              <option value="Direct Debit">Automated Direct Debit</option>
+              <option value="Debit Card">Online Debit Card Payment</option>
+              <option value="Bank Transfer">Standing Order / Faster Payment</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="ptp-signature">Electronic Signature (Full Legal Name)</label>
+            <input type="text" id="ptp-signature" class="form-control" placeholder="e.g. Sarah Jenkins" required>
+            <div class="form-help">Type your full legal name as it appears on your account to digitally sign this commitment.</div>
+            <div id="ptp-signature-preview" class="signature-preview-box" style="display: none;">
+              <span class="sig-label">Digital Signature Preview:</span>
+              <span class="sig-text" id="ptp-sig-text"></span>
+              <span class="sig-meta" id="ptp-sig-meta"></span>
+            </div>
+          </div>
+
+          <label class="checkbox-label" style="margin-bottom: 24px;">
+            <input type="checkbox" id="ptp-esign-consent" required>
+            <span>
+              I confirm that typing my full name above constitutes a legally valid electronic signature under the UK Electronic Communications Act 2000, formalising my Promise to Pay commitment.
+            </span>
+          </label>
+
+          <div class="button-group">
+            <button type="submit" class="btn btn-primary">
+              Submit Promise to Pay &amp; Finalise
+            </button>
+            <button type="button" class="btn btn-outline" onclick="navigateTo('plan-details')">
+              Back
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ========================================================================== -->
+    <!-- SCREEN 7: AGREEMENT CONFIRMATION & SESSION SUMMARY                          -->
+    <!-- • Related Story IDs: US-10 (KAN-27), US-11 (KAN-28), US-12 (KAN-29),         -->
+    <!--   US-18 (KAN-35), US-20 (KAN-37)                                            -->
+    <!-- • Key Data Shown: Unique Confirmation Code (LTB-PTP-2026-XXXX), account     -->
+    <!--   summary list, electronic signature, UTC signing timestamp, call pause     -->
+    <!--   notice, notice that copy has been emailed & SMS-dispatched                -->
+    <!-- • Validation / Business Rules: Writes completed PTP & plan transaction back -->
+    <!--   to core records; updates account state to active agreement                -->
+    <!-- • Next Steps Possible:                                                      -->
+    <!--   - "Return to Account Overview" -> Screen 3 (shows updated Active Plan)   -->
+    <!--   - "Print / Save Agreement PDF" -> Triggers browser print/PDF export       -->
+    <!--   - "Sign Out" -> Logs out and returns to Screen 1                          -->
+    <!-- ========================================================================== -->
+    <section id="view-confirmation" class="portal-view">
+      <div class="card" style="max-width: 680px; margin: 0 auto;">
+        <div style="border-left: 4px solid var(--color-success); padding-left: 16px; margin-bottom: 24px;">
+          <h1 class="card-title" style="color: var(--color-success); margin-bottom: 4px;">Agreement Confirmed</h1>
+          <p style="font-size: 14px; color: var(--color-text-muted);">
+            Your payment arrangement and digital Promise to Pay have been recorded successfully.
+          </p>
+        </div>
+
+        <div class="alert alert-success">
+          <div>
+            <strong>Confirmation Code:</strong> <span id="conf-ref-code" style="font-family: monospace; font-weight: 700;">LTB-PTP-2026-0000</span>
+            <br>
+            A copy of this agreement, schedule breakdown, and Direct Debit confirmation have been emailed to 
+            <strong id="conf-email-target">email</strong> and sent via SMS to <strong id="conf-phone-target">phone</strong>.
+          </div>
+        </div>
+
+        <h2 style="font-size: 16px; font-weight: 700; color: var(--color-primary-dark); margin-bottom: 12px;">
+          Session &amp; Agreement Summary
+        </h2>
+
+        <div class="summary-list">
+          <div class="summary-row">
+            <span class="summary-label">Account Holder</span>
+            <span class="summary-value" id="conf-customer-name">Customer</span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">Account Reference</span>
+            <span class="summary-value" id="conf-account">10000000</span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">Agreed Arrangement</span>
+            <span class="summary-value" id="conf-plan-name">Plan Name</span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">First Payment Commitment</span>
+            <span class="summary-value" id="conf-first-amount">£0.00</span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">First Payment Due</span>
+            <span class="summary-value" id="conf-first-date">Date</span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">Payment Method</span>
+            <span class="summary-value" id="conf-method">Method</span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">Electronic Signature</span>
+            <span class="summary-value" id="conf-signature" style="font-family: 'Brush Script MT', 'Segoe Script', cursive, Georgia, serif; font-size: 19px; font-weight: normal; color: var(--color-primary-dark);">Signature</span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">Signed Timestamp</span>
+            <span class="summary-value" id="conf-signed-at" style="font-size: 13px; font-variant-numeric: tabular-nums;">Timestamp</span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">Outbound Recovery Status</span>
+            <span class="summary-value" style="color: var(--color-success);">PAUSED &bull; Zero Late Fees</span>
+          </div>
+        </div>
+
+        <div class="alert alert-info" style="font-size: 13px;">
+          <div>
+            <strong>What happens next?</strong> You will receive a reminder 3 days prior to your scheduled payment date. 
+            No telephone calls will be made to you as long as the agreed schedule is maintained.
+          </div>
+        </div>
+
+        <div class="button-group">
+          <button type="button" class="btn btn-primary" onclick="navigateTo('summary')">
+            Return to Account Overview
+          </button>
+          <button type="button" class="btn btn-secondary" onclick="window.print()">
+            Print / Save Agreement PDF
+          </button>
+          <button type="button" class="btn btn-outline" onclick="handleLogout()">
+            Sign Out
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================== -->
+    <!-- SCREEN 8: REPRESENTATIVE ROUTING & CALLBACK REQUEST                         -->
+    <!-- • Related Story IDs: US-02 (KAN-19), US-13 (KAN-30), US-15 (KAN-32),         -->
+    <!--   US-17 (KAN-34)                                                            -->
+    <!-- • Key Data Shown: Reason for routing (autofilled), preserved session audit, -->
+    <!--   customer name, account number, phone, email, preferred weekday selector, -->
+    <!--   preferred time of day selector, optional notes textarea                   -->
+    <!-- • Validation / Business Rules: Preserves context from prior journey step    -->
+    <!--   so customer does not repeat information; clarifies that window is a       -->
+    <!--   preference and representatives will try to contact within timeframe      -->
+    <!-- • Next Steps Possible:                                                      -->
+    <!--   - "Submit Request for Callback" -> Displays Variation 8B (Success Conf)   -->
+    <!--   - "Cancel" -> Returns to previous view (Landing or Account Summary)       -->
+    <!-- ========================================================================== -->
+    <section id="view-request-call" class="portal-view">
+      <div class="card" style="max-width: 640px; margin: 0 auto;">
+        
+        <!-- ---------------------------------------------------------------------- -->
+        <!-- VARIATION 8A: CALLBACK REQUEST FORM (AUTOFILLED CONTEXT)               -->
+        <!-- ---------------------------------------------------------------------- -->
+        <div id="rep-form-container">
+          <h1 class="card-title">Representative Contact Request</h1>
+          <p class="card-subtitle">
+            If you need bespoke support, have experienced a lockout, or prefer discussing options with a specialist, 
+            submit your details below. Your session context is automatically preserved so you will not need to repeat information.
+          </p>
+
+          <form id="form-request-call">
+            <div class="form-group">
+              <label class="form-label" for="rep-reason">Reason for Routing / Case Context</label>
+              <input type="text" id="rep-reason" class="form-control" readonly style="font-weight: 600; color: var(--color-primary-dark);">
+              <div class="form-help">Autofilled from your current session activity.</div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="rep-session-details">Preserved Session Summary</label>
+              <textarea id="rep-session-details" class="form-control" readonly rows="3" style="font-family: monospace; font-size: 12px;"></textarea>
+              <div class="form-help">Forwarded to the collections representative console.</div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+              <div class="form-group">
+                <label class="form-label" for="rep-name">Customer Name</label>
+                <input type="text" id="rep-name" class="form-control" placeholder="Your Full Name" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="rep-account">Account Reference</label>
+                <input type="text" id="rep-account" class="form-control" placeholder="8-digit account number">
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+              <div class="form-group">
+                <label class="form-label" for="rep-phone">Preferred Contact Phone Number</label>
+                <input type="tel" id="rep-phone" class="form-control" placeholder="e.g. 07700900123" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="rep-email">Email Address</label>
+                <input type="email" id="rep-email" class="form-control" placeholder="e.g. name@example.com">
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+              <div class="form-group">
+                <label class="form-label" for="rep-weekday">Preferred Weekday</label>
+                <select id="rep-weekday" class="form-control" required>
+                  <option value="Any Weekday">Any Weekday (Mon – Fri)</option>
+                  <option value="Monday">Monday</option>
+                  <option value="Tuesday">Tuesday</option>
+                  <option value="Wednesday">Wednesday</option>
+                  <option value="Thursday">Thursday</option>
+                  <option value="Friday">Friday</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="rep-time-slot">Preferred Time of Day</label>
+                <select id="rep-time-slot" class="form-control" required>
+                  <option value="Morning (09:00 - 12:00)">Morning (09:00 – 12:00)</option>
+                  <option value="Afternoon (12:00 - 17:00)">Afternoon (12:00 – 17:00)</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-help" style="margin-top: -12px; margin-bottom: 16px;">
+              Please note: this is a preferred window and not a guaranteed call time. Representatives will try to contact you within this timeframe where possible.
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="rep-notes">Additional Notes for Representative (Optional)</label>
+              <textarea id="rep-notes" class="form-control" placeholder="Describe any specific circumstances or questions you would like the representative to know in advance."></textarea>
+            </div>
+
+            <div class="button-group">
+              <button type="submit" class="btn btn-primary">
+                Submit Request for Callback
+              </button>
+              <button type="button" class="btn btn-outline" onclick="resetRepresentativeForm()">
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- ---------------------------------------------------------------------- -->
+        <!-- VARIATION 8B: CALLBACK QUEUED CONFIRMATION                             -->
+        <!-- • Key Data Shown: Queue Reference Code (LTB-REP-2026-XXXX), requested   -->
+        <!--   weekday/time slot, contact expectation disclaimer                     -->
+        <!-- • Next Steps Possible: "Done • Return" -> Navigates to Summary / Landing-->
+        <!-- ---------------------------------------------------------------------- -->
+        <div id="rep-success-container" style="display: none;">
+          <div style="border-left: 4px solid var(--color-success); padding-left: 16px; margin-bottom: 20px;">
+            <h1 class="card-title" style="color: var(--color-success);">Callback Scheduled</h1>
+            <p style="font-size: 14px; color: var(--color-text-muted);">
+              A collections specialist has been queued with your full case history.
+            </p>
+          </div>
+
+          <div class="alert alert-success">
+            <div>
+              <strong>Queue Reference:</strong> <span id="rep-conf-ref" style="font-family: monospace; font-weight: 700;">LTB-REP-2026-0000</span>
+            </div>
+          </div>
+
+          <div class="summary-list">
+            <div class="summary-row">
+              <span class="summary-label">Customer</span>
+              <span class="summary-value" id="rep-conf-name">Name</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">Callback Telephone</span>
+              <span class="summary-value" id="rep-conf-phone">Phone</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">Requested Contact Window</span>
+              <span class="summary-value" id="rep-conf-slot">Slot</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">Primary Topic</span>
+              <span class="summary-value" id="rep-conf-reason">Reason</span>
+            </div>
+          </div>
+
+          <div class="alert alert-info" style="font-size: 13px;">
+            <div>
+              <strong>Contact Expectation:</strong> A specialist will review your preserved portal notes in advance so you will not need to repeat context. A representative will try to contact you within your requested window where possible.
+            </div>
+          </div>
+
+          <div class="button-group">
+            <button type="button" class="btn btn-primary" onclick="resetRepresentativeForm()">
+              Done &bull; Return
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================================================== -->
+    <!-- SCREEN 9: REPORT FINANCIAL DIFFICULTY / VULNERABILITY DECLARATION           -->
+    <!-- • Related Story IDs: US-06 (KAN-23), US-14 (KAN-31)                         -->
+    <!-- • Key Data Shown: Nature of difficulty selector, details textarea, advice   -->
+    <!--   helpline numbers (StepChange, National Debtline), breathing space notice  -->
+    <!-- • Validation / Business Rules: Non-judgmental supportive intake. Informs    -->
+    <!--   customer that statutory pause is not debt forgiveness ("not a free pass") -->
+    <!--   and will be evaluated by an agent as soon as possible. Applies 30-day     -->
+    <!--   statutory recovery hold and logs audit event. (BPMN Activity_1v6qc40)     -->
+    <!-- • Next Steps Possible:                                                      -->
+    <!--   - "Submit Vulnerability Notice" -> Displays Variation 9B (Hold Confirmed) -->
+    <!--   - "Back" -> Returns to previous view                                      -->
+    <!-- ========================================================================== -->
+    <section id="view-vulnerability" class="portal-view">
+      <div class="card" style="max-width: 640px; margin: 0 auto;">
+        
+        <!-- ---------------------------------------------------------------------- -->
+        <!-- VARIATION 9A: FINANCIAL DIFFICULTY INTAKE FORM                         -->
+        <!-- ---------------------------------------------------------------------- -->
+        <div id="vuln-form-container">
+          <div style="border-left: 4px solid var(--color-primary); padding-left: 16px; margin-bottom: 20px;">
+            <h1 class="card-title">Report Financial Difficulty</h1>
+            <p class="card-subtitle">
+              We are committed to treating customers fairly and supporting you through unexpected life events.
+            </p>
+          </div>
+
+          <div class="alert alert-info">
+            <div>
+              <strong>Temporary Statutory Breathing Space (Up to 30 Days):</strong> Submitting this notice temporarily pauses automated recovery letters and calls while our team reviews your situation. 
+              <strong>Please note:</strong> This breathing space is not a debt waiver or "free pass"—your arrears balance remains due, and your case will be evaluated by an agent as soon as possible to assess eligibility and agree on an enforceable repayment solution.
+            </div>
+          </div>
+
+          <form id="form-vulnerability">
+            <div class="form-group">
+              <label class="form-label" for="vuln-category">Nature of Difficulty</label>
+              <select id="vuln-category" class="form-control" required>
+                <option value="Loss of Income / Redundancy">Loss of Income / Redundancy</option>
+                <option value="Illness, Injury, or Long-term Health Condition">Illness, Injury, or Long-term Health Condition</option>
+                <option value="Mental Health / Wellbeing Challenges">Mental Health / Wellbeing Challenges</option>
+                <option value="Bereavement">Bereavement in immediate family</option>
+                <option value="Multiple Debt Obligations / High Living Costs">Multiple Debt Obligations / High Living Costs</option>
+                <option value="Other Financial Hardship">Other Financial Hardship</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="vuln-details">Additional Information (Optional)</label>
+              <textarea id="vuln-details" class="form-control" placeholder="Feel free to share as much or as little as you feel comfortable with. This helps us tailor appropriate support."></textarea>
+            </div>
+
+            <div class="alert alert-warning" style="font-size: 13px;">
+              <div>
+                <strong>Free Independent Advice:</strong> You can also access free, independent, confidential debt advice from 
+                <strong>StepChange Debt Charity</strong> (0800 138 1111) or <strong>National Debtline</strong> (0808 808 4000).
+              </div>
+            </div>
+
+            <div class="button-group">
+              <button type="submit" class="btn btn-primary">
+                Submit Vulnerability Notice &amp; Apply Hold
+              </button>
+              <button type="button" class="btn btn-outline" onclick="closeVulnerabilityModal()">
+                Back
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- ---------------------------------------------------------------------- -->
+        <!-- VARIATION 9B: STATUTORY HOLD CONFIRMATION & AGENT REFERRAL NOTICE       -->
+        <!-- • Key Data Shown: Protection Ref (LTB-CARE-2026-XXXX), category summary,-->
+        <!--   disclaimer that case will be reviewed promptly by care agent          -->
+        <!-- • Next Steps Possible: "Return to Portal" -> Navigates to Summary / Landing-->
+        <!-- ---------------------------------------------------------------------- -->
+        <div id="vuln-success-container" style="display: none;">
+          <div style="border-left: 4px solid var(--color-success); padding-left: 16px; margin-bottom: 20px;">
+            <h1 class="card-title" style="color: var(--color-success);">Hold Applied Successfully</h1>
+            <p class="card-subtitle">
+              Your account has been transferred to our specialist Vulnerability Care Team.
+            </p>
+          </div>
+
+          <div class="alert alert-success">
+            <div>
+              <strong>Protection Reference:</strong> <span id="vuln-ref-code" style="font-family: monospace; font-weight: 700;">LTB-CARE-2026-0000</span>
+              <br>
+              A temporary statutory recovery hold has been logged for reason: <strong id="vuln-category-display">Category</strong>.
+            </div>
+          </div>
+
+          <p style="font-size: 14px; line-height: 1.6; margin-bottom: 20px;">
+            Automated recovery calls and enforcement actions are temporarily paused while your account is under assessment. 
+            <strong>Please remember:</strong> This pause is not a free pass or debt forgiveness. Your case will be evaluated by an agent as soon as possible, and a specialist will contact you discreetly to discuss appropriate, sustainable repayment options.
+          </p>
+
+          <div class="button-group">
+            <button type="button" class="btn btn-primary" onclick="closeVulnerabilityModal()">
+              Return to Portal
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================================================== -->
+  <!-- MODAL VARIATIONS: POPUPS & DIALOGS                                          -->
+  <!-- ========================================================================== -->
+
+  <!-- -------------------------------------------------------------------------- -->
+  <!-- MODAL 1: PLAN ACKNOWLEDGMENT REQUIRED POPUP                                -->
+  <!-- • Related Story IDs: US-10 (KAN-27)                                        -->
+  <!-- • Key Data Shown: Warning message and action prompt                        -->
+  <!-- • Validation / Business Rules: Triggered if user clicks "Confirm Plan"     -->
+  <!--   without checking the statutory agreement schedule box                    -->
+  <!-- • Next Step: User clicks "I Understand", dismisses modal, checks the box   -->
+  <!-- -------------------------------------------------------------------------- -->
+  <div class="modal-overlay" id="modal-ack-required">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <span class="modal-title">Acknowledgment Required</span>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-warning" style="margin-bottom: 16px;">
+          <div>
+            <strong>Action Required:</strong> You must acknowledge the repayment schedule before you can confirm your plan and submit your Promise to Pay.
+          </div>
+        </div>
+        <p style="font-size: 14px; line-height: 1.5; color: var(--color-text);">
+          Please tick the acknowledgment box confirming that you have reviewed the schedule and agree to make the required repayments according to the specified dates.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="closeAckModal()">I Understand</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- -------------------------------------------------------------------------- -->
+  <!-- MODAL 2: SESSION INACTIVITY 1-MINUTE WARNING DIALOG                        -->
+  <!-- • Related Story IDs: US-07 (KAN-24)                                        -->
+  <!-- • Key Data Shown: 60-second countdown warning notice                       -->
+  <!-- • Validation / Business Rules: Triggers at 2 minutes of inactivity;        -->
+  <!--   prevents unattended financial data leakage (BPMN Activity_11ywdyt)        -->
+  <!-- • Next Steps:                                                              -->
+  <!--   - "Keep Session Active" -> Resets 3-minute session timer & closes modal   -->
+  <!--   - "End Session Now" -> Immediately logs out and clears screen data       -->
+  <!-- -------------------------------------------------------------------------- -->
+  <div class="modal-overlay" id="modal-timeout-warning">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <span class="modal-title">Session Inactivity Warning</span>
+      </div>
+      <div class="modal-body">
+        <p style="margin-bottom: 12px;">
+          For your security and to protect confidential financial information, your session will automatically pause in 
+          <strong>1 minute</strong> due to inactivity.
+        </p>
+        <p style="font-size: 13px; color: var(--color-text-muted);">
+          Would you like to keep your session active and continue managing your account?
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="btn-extend-session">Keep Session Active</button>
+        <button type="button" class="btn btn-outline" id="btn-timeout-logout">End Session Now</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- -------------------------------------------------------------------------- -->
+  <!-- MODAL 3: SESSION TIMED OUT & PAUSED DIALOG                                 -->
+  <!-- • Related Story IDs: US-07 (KAN-24), US-18 (KAN-35)                        -->
+  <!-- • Key Data Shown: Timeout security notice                                  -->
+  <!-- • Validation / Business Rules: Triggered at 3 minutes of inactivity; DOM   -->
+  <!--   financial variables cleared; event logged to metadata audit trail        -->
+  <!-- • Next Step: User clicks "Return to Sign In" -> Screen 1 / 2               -->
+  <!-- -------------------------------------------------------------------------- -->
+  <div class="modal-overlay" id="modal-timeout-expired">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <span class="modal-title">Session Timed Out &bull; Paused for Security</span>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-warning" style="margin-bottom: 16px;">
+          <div>
+            Your authenticated session has ended after 3 minutes of inactivity. All confidential debt data has been cleared from your screen.
+          </div>
+        </div>
+        <p style="font-size: 13px; color: var(--color-text-muted);">
+          Your progress has been logged in portal metadata. You can re-authenticate at any time to resume.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="acknowledgeSessionTimeout()">Return to Sign In</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- PERSISTENT FOOTER WITH DIFFICULTY BUTTON   -->
+  <!-- ========================================== -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-notice">
+        <strong>Legacy Trust Bank PLC</strong> &bull; Authorised by the Prudential Regulation Authority &bull; Regulated by the FCA (Ref: 124982)
+      </div>
+      <div>
+        <button type="button" class="btn btn-danger-outline btn-sm" id="btn-report-difficulty">
+          Report Financial Difficulty
+        </button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="mock-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

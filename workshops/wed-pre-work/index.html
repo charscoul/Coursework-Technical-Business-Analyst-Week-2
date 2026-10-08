@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pritzki Veterinary Clinic - Check-In Kiosk</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="kiosk-container">
+        <!-- Screen 1: Phone Lookup -->
+        <div id="phoneScreen" class="screen active">
+            <div class="content">
+                <header>
+                    <h1>Welcome to Pritzki Veterinary Clinic</h1>
+                    <p class="subtitle">Pet Check-In Kiosk</p>
+                </header>
+                
+                <div class="phone-lookup">
+                    <h2>Enter Your Phone Number</h2>
+                    <p class="instructions">Please enter the phone number associated with your appointment</p>
+                    
+                    <div class="phone-input-container">
+                        <div class="phone-input-row">
+                            <div class="country-code-wrapper">
+                                <label for="countryCodeSelect">Country:</label>
+                                <select id="countryCodeSelect" class="country-code-select">
+                                    <option value="">Select country...</option>
+                                </select>
+                            </div>
+                            
+                            <div class="local-number-wrapper">
+                                <label for="phoneInput">Phone Number:</label>
+                                <input 
+                                    type="tel" 
+                                    id="phoneInput" 
+                                    placeholder="Enter phone number" 
+                                    maxlength="20"
+                                    inputmode="numeric"
+                                >
+                            </div>
+                        </div>
+                        
+                        <button id="lookupBtn" class="btn btn-primary">Look Up Appointment</button>
+                    </div>
+                    
+                    <div id="phoneError" class="error-message"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 2: Appointment Confirmation -->
+        <div id="confirmationScreen" class="screen">
+            <div class="content">
+                <header>
+                    <h1>Confirm Your Appointment</h1>
+                </header>
+                
+                <div class="appointment-details">
+                    <div class="detail-card">
+                        <h3>Pet Name</h3>
+                        <p id="petName" class="detail-value">-</p>
+                    </div>
+                    
+                    <div class="detail-card">
+                        <h3>Pet Type</h3>
+                        <p id="petType" class="detail-value">-</p>
+                    </div>
+                    
+                    <div class="detail-card">
+                        <h3>Appointment Time</h3>
+                        <p id="appointmentTime" class="detail-value">-</p>
+                    </div>
+                    
+                    <div class="detail-card">
+                        <h3>Appointment Date</h3>
+                        <p id="appointmentDate" class="detail-value">-</p>
+                    </div>
+                </div>
+                
+                <div class="button-group">
+                    <button id="confirmBtn" class="btn btn-primary">Confirm Appointment</button>
+                    <button id="somethingWrongBtn" class="btn btn-warning">❓ Something Not Right?</button>
+                    <button id="cancelBtn" class="btn btn-secondary">Start Over</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 3: Pre-Appointment Instructions -->
+        <div id="instructionsScreen" class="screen">
+            <div class="content">
+                <header>
+                    <h1>Pre-Appointment Instructions</h1>
+                    <p class="subtitle" id="instructionsPetName">Welcome, [Pet Name]!</p>
+                </header>
+                
+                <div class="instructions-content">
+                    <div class="instruction-item">
+                        <h3>Current Status</h3>
+                        <ul>
+                            <li>Your appointment has been confirmed</li>
+                            <li>A staff member will be with you shortly</li>
+                            <li>Please proceed to the reception area</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="instruction-item important">
+                        <h3>ℹ️ What Happens Next</h3>
+                        <p>Please wait in the reception area. If your pet becomes anxious or you have any questions, let a staff member know immediately. We're ready to see you!</p>
+                    </div>
+                </div>
+                
+                <div class="button-group">
+                    <button id="finishBtn" class="btn btn-primary">I'm Ready for Check-In</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 4: No Appointment / Speak to Reception -->
+        <div id="noAppointmentScreen" class="screen">
+            <div class="content">
+                <header>
+                    <h1>No Appointment Found</h1>
+                </header>
+                
+                <div class="message-container">
+                    <div class="alert alert-info">
+                        <p>We don't have an appointment scheduled for you today under that phone number.</p>
+                    </div>
+                    
+                    <div class="next-steps">
+                        <h2>What's Next?</h2>
+                        <div class="option-card">
+                            <h3>📞 Speak to Reception</h3>
+                            <p>Please ask a staff member at the front desk to help you schedule an appointment or look up your account.</p>
+                        </div>
+                        
+                        <div class="option-card">
+                            <h3>✏️ Different Phone Number?</h3>
+                            <p>You can try entering a different phone number associated with your account.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="button-group">
+                    <button id="tryAgainBtn" class="btn btn-secondary">Try Another Number</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 5: Something Not Right - Speak to Staff -->
+        <div id="issueScreen" class="screen">
+            <div class="content">
+                <header>
+                    <h1>We're Here to Help</h1>
+                </header>
+                
+                <div class="message-container">
+                    <div class="alert alert-warning">
+                        <p>If something doesn't look right with your appointment details, please speak with our reception staff.</p>
+                    </div>
+                    
+                    <div class="help-content">
+                        <h2>Our Team Can Help With:</h2>
+                        <div class="help-item">
+                            <h3>📝 Wrong Appointment Details</h3>
+                            <p>If the pet name, appointment time, or other details are incorrect</p>
+                        </div>
+                        
+                        <div class="help-item">
+                            <h3>🔍 Account Issues</h3>
+                            <p>If you're having trouble finding your appointment or account</p>
+                        </div>
+                        
+                        <div class="help-item">
+                            <h3>❓ Other Concerns</h3>
+                            <p>Anything else we can help you with</p>
+                        </div>
+                    </div>
+                    
+                    <div class="staff-instructions">
+                        <p><strong>Please proceed to the reception desk</strong> and let a staff member know you need assistance. They'll be happy to help!</p>
+                    </div>
+                </div>
+                
+                <div class="button-group">
+                    <button id="startOverFromIssueBtn" class="btn btn-secondary">Start Over</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 6: Check-In Complete -->
+        <div id="completeScreen" class="screen">
+            <div class="content">
+                <header>
+                    <h1>Check-In Complete!</h1>
+                </header>
+                
+                <div class="completion-message">
+                    <div class="success-icon">✓</div>
+                    <h2>Thank you for checking in</h2>
+                    <p id="completePetName">We look forward to seeing [Pet Name] soon!</p>
+                    <p class="secondary-message">Please have a seat in the waiting area. A staff member will call you shortly.</p>
+                </div>
+                
+                <div class="button-group">
+                    <button id="restartBtn" class="btn btn-primary">Check In Another Pet</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

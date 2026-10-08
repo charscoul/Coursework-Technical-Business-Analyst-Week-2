@@ -1,0 +1,261 @@
+{
+  "testUsers": [
+    {
+      "email": "alice.johnson@email.com",
+      "password": "password123",
+      "firstName": "Alice",
+      "lastName": "Johnson",
+      "phone": "(555) 123-4567",
+      "address": "123 Oak Street",
+      "city": "Springfield",
+      "assignedVet": "vet-1"
+    },
+    {
+      "email": "bob.smith@email.com",
+      "password": "password123",
+      "firstName": "Bob",
+      "lastName": "Smith",
+      "phone": "(555) 234-5678",
+      "address": "456 Maple Avenue",
+      "city": "Shelbyville",
+      "assignedVet": "vet-2"
+    },
+    {
+      "email": "carol.williams@email.com",
+      "password": "password123",
+      "firstName": "Carol",
+      "lastName": "Williams",
+      "phone": "(555) 345-6789",
+      "address": "789 Pine Road",
+      "city": "Capital City",
+      "assignedVet": "vet-3"
+    },
+    {
+      "email": "david.brown@email.com",
+      "password": "password123",
+      "firstName": "David",
+      "lastName": "Brown",
+      "phone": "(555) 456-7890",
+      "address": "321 Elm Street",
+      "city": "Springfield",
+      "assignedVet": "vet-1"
+    },
+    {
+      "email": "emma.davis@email.com",
+      "password": "password123",
+      "firstName": "Emma",
+      "lastName": "Davis",
+      "phone": "(555) 567-8901",
+      "address": "654 Birch Lane",
+      "city": "Shelbyville",
+      "assignedVet": "vet-2"
+    }
+  ],
+  "testPets": {
+    "user_1": [
+      {
+        "id": "pet_1",
+        "name": "Max",
+        "species": "Dog",
+        "breed": "Golden Retriever",
+        "age": 3,
+        "weight": 32.5,
+        "medicalNotes": "Allergic to chicken. Needs annual checkup."
+      },
+      {
+        "id": "pet_2",
+        "name": "Whiskers",
+        "species": "Cat",
+        "breed": "Persian",
+        "age": 2,
+        "weight": 4.8,
+        "medicalNotes": "Indoor cat. Sensitive stomach."
+      }
+    ],
+    "user_2": [
+      {
+        "id": "pet_3",
+        "name": "Buddy",
+        "species": "Dog",
+        "breed": "Labrador",
+        "age": 5,
+        "weight": 35.2,
+        "medicalNotes": "Diabetic. Requires insulin injections twice daily."
+      },
+      {
+        "id": "pet_4",
+        "name": "Fluffy",
+        "species": "Rabbit",
+        "breed": "Holland Lop",
+        "age": 1,
+        "weight": 2.2,
+        "medicalNotes": "Recently adopted. Needs health screening."
+      }
+    ],
+    "user_3": [
+      {
+        "id": "pet_5",
+        "name": "Mittens",
+        "species": "Cat",
+        "breed": "Tabby",
+        "age": 7,
+        "weight": 5.1,
+        "medicalNotes": "Senior cat. Thyroid medication required."
+      },
+      {
+        "id": "pet_6",
+        "name": "Tweety",
+        "species": "Bird",
+        "breed": "Parakeet",
+        "age": 4,
+        "weight": 0.03,
+        "medicalNotes": "Social bird. Needs toys and enrichment."
+      },
+      {
+        "id": "pet_7",
+        "name": "Nibbles",
+        "species": "Hamster",
+        "breed": "Syrian Hamster",
+        "age": 1,
+        "weight": 0.12,
+        "medicalNotes": "New pet. Needs cage setup advice."
+      }
+    ],
+    "user_4": [
+      {
+        "id": "pet_8",
+        "name": "Rex",
+        "species": "Dog",
+        "breed": "German Shepherd",
+        "age": 4,
+        "weight": 38.5,
+        "medicalNotes": "Working dog. Hip dysplasia screening done."
+      }
+    ],
+    "user_5": [
+      {
+        "id": "pet_9",
+        "name": "Luna",
+        "species": "Cat",
+        "breed": "Siamese",
+        "age": 3,
+        "weight": 4.2,
+        "medicalNotes": "Very vocal. Needs regular play sessions."
+      },
+      {
+        "id": "pet_10",
+        "name": "Hoppy",
+        "species": "Rabbit",
+        "breed": "Lionhead",
+        "age": 2,
+        "weight": 1.8,
+        "medicalNotes": "Bonded pair with Jumpy. Must have joint appointments."
+      },
+      {
+        "id": "pet_11",
+        "name": "Jumpy",
+        "species": "Rabbit",
+        "breed": "Lionhead",
+        "age": 2,
+        "weight": 1.9,
+        "medicalNotes": "Bonded pair with Hoppy. Must have joint appointments."
+      }
+    ]
+  },
+  "testAppointments": {
+    "user_1": [
+      {
+        "id": "apt_1",
+        "branch": "branch-1",
+        "type": "in-clinic",
+        "vetName": "Vet 1",
+        "reason": "checkup",
+        "petId": "pet_1",
+        "petName": "Max",
+        "date": "2026-10-15",
+        "time": "10:00 AM",
+        "notes": "Annual checkup and vaccinations.",
+        "status": "confirmed"
+      },
+      {
+        "id": "apt_2",
+        "branch": "branch-1",
+        "type": "in-clinic",
+        "vetName": "Vet 2",
+        "reason": "dental",
+        "petId": "pet_2",
+        "petName": "Whiskers",
+        "date": "2026-10-22",
+        "time": "02:00 PM",
+        "notes": "Teeth cleaning and tartar removal.",
+        "status": "confirmed"
+      }
+    ],
+    "user_2": [
+      {
+        "id": "apt_3",
+        "branch": "branch-2",
+        "type": "mobile",
+        "vetName": "Vet 2",
+        "reason": "illness",
+        "petId": "pet_3",
+        "petName": "Buddy",
+        "date": "2026-10-10",
+        "time": "11:00 AM",
+        "notes": "Follow-up for diabetes management. Insulin check.",
+        "status": "confirmed"
+      }
+    ],
+    "user_3": [
+      {
+        "id": "apt_4",
+        "branch": "branch-3",
+        "type": "in-clinic",
+        "vetName": "Vet 3",
+        "reason": "vaccination",
+        "petId": "pet_5",
+        "petName": "Mittens",
+        "date": "2026-10-18",
+        "time": "03:00 PM",
+        "notes": "Senior wellness check and blood work.",
+        "status": "confirmed"
+      }
+    ],
+    "user_4": [],
+    "user_5": [
+      {
+        "id": "apt_5",
+        "branch": "branch-1",
+        "type": "in-clinic",
+        "vetName": "Vet 2",
+        "reason": "checkup",
+        "petId": "pet_9",
+        "petName": "Luna",
+        "date": "2026-10-20",
+        "time": "09:30 AM",
+        "notes": "Regular checkup and behavior consultation.",
+        "status": "confirmed"
+      },
+      {
+        "id": "apt_6",
+        "branch": "branch-2",
+        "type": "in-clinic",
+        "vetName": "Vet 2",
+        "reason": "checkup",
+        "petId": "pet_10",
+        "petName": "Hoppy & Jumpy",
+        "date": "2026-10-25",
+        "time": "11:00 AM",
+        "notes": "Joint wellness check for bonded rabbit pair.",
+        "status": "confirmed"
+      }
+    ]
+  },
+  "testUserIds": {
+    "alice.johnson@email.com": "user_1",
+    "bob.smith@email.com": "user_2",
+    "carol.williams@email.com": "user_3",
+    "david.brown@email.com": "user_4",
+    "emma.davis@email.com": "user_5"
+  }
+}
