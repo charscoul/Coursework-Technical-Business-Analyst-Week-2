@@ -45,15 +45,20 @@
 
     <!-- ========================================================================== -->
     <!-- SCREEN 1: LANDING / ENTRY PAGE                                              -->
-    <!-- • Related Story IDs: US-01 (KAN-18), US-15 (KAN-32)                        -->
-    <!-- • Key Data Shown: Portal scope overview, self-service benefits, security     -->
-    <!--   encryption badge, regulatory FCA notice                                   -->
-    <!-- • Validation / Business Rules: Zero customer debt data displayed before      -->
-    <!--   successful identity verification (clean unauthenticated state)             -->
-    <!-- • Next Steps Possible:                                                      -->
+    <!-- • Stories: US-01 (KAN-18), US-15 (KAN-32)                                   -->
+    <!-- • Data: Portal scope overview, self-service benefits, security encryption   -->
+    <!--   badge, regulatory FCA notice                                              -->
+    <!-- • Rule: Zero customer debt data displayed before successful identity        -->
+    <!--   verification (clean unauthenticated state)                                -->
+    <!-- • Next step:                                                                -->
     <!--   - "Sign In & Verify Identity" -> Navigates to Screen 2 (Identity Verify)  -->
     <!--   - "Request a Representative Call" -> Navigates to Screen 8 (Rep Routing)  -->
     <!--   - "Report Financial Difficulty" (Footer) -> Navigates to Screen 9 (Vuln)  -->
+    <!-- • Branch outcome:                                                           -->
+    <!--   - Sign in branch: Proceed to customer authentication                     -->
+    <!--   - Call branch: Route directly to callback request with general inquiry    -->
+    <!--     context preserved                                                       -->
+    <!--   - Vulnerability branch: Route to statutory breathing space hold intake   -->
     <!-- ========================================================================== -->
     <section id="view-landing" class="portal-view active">
       <div class="card">
@@ -87,20 +92,22 @@
 
     <!-- ========================================================================== -->
     <!-- SCREEN 2: LOGIN / IDENTITY VERIFICATION                                     -->
-    <!-- • Related Story IDs: US-01 (KAN-18), US-02 (KAN-19)                        -->
-    <!-- • Key Data Shown: Identifier input (email/phone), 8-digit Account Number,   -->
+    <!-- • Stories: US-01 (KAN-18), US-02 (KAN-19)                                   -->
+    <!-- • Data: Identifier input (email/phone), 8-digit Account Number,             -->
     <!--   auth method selector (Password vs SMS), 3-attempt warning alert           -->
-    <!-- • Validation / Business Rules:                                              -->
-    <!--   - Match identifier + account number + credential against bank records      -->
-    <!--   - Enforce 3-attempt limit: failures decrement counter                     -->
-    <!--   - On 3rd failure: lock self-service and auto-route to Screen 8 with reason -->
-    <!--     "forgot login details" autofilled (BPMN Gateway_1im7526)                -->
-    <!-- • Next Steps Possible:                                                      -->
-    <!--   - Successful verification -> Navigates to Screen 3 (Account Summary)       -->
-    <!--   - 1st/2nd Failed attempt -> Re-renders with remaining attempts alert      -->
-    <!--   - 3rd Failed attempt -> Auto-routes to Screen 8 (Rep Callback Routing)     -->
+    <!-- • Rule: Match identifier + account number + credential against bank records.-->
+    <!--   Enforce 3-attempt limit. On 3rd failure: lock self-service and auto-route -->
+    <!--   to Screen 8 with reason "forgot login details" autofilled (BPMN           -->
+    <!--   Gateway_1im7526)                                                          -->
+    <!-- • Next step:                                                                -->
+    <!--   - Enter credentials and click "Verify & Continue"                         -->
     <!--   - "Cancel" -> Returns to Screen 1 (Landing Page)                           -->
     <!--   - "Report Financial Difficulty" (Footer) -> Navigates to Screen 9 (Vuln)  -->
+    <!-- • Branch outcome:                                                           -->
+    <!--   - Match succeeded -> Screen 3 (Account Summary)                           -->
+    <!--   - Match failed (Attempts 1-2) -> Display Variation 2B (decrement attempt) -->
+    <!--   - Match failed (Attempt 3) -> Exception path: Auto-redirect to Screen 8   -->
+    <!--     with security lockout referral code                                     -->
     <!-- ========================================================================== -->
     <section id="view-login" class="portal-view">
       <div class="card" style="max-width: 580px; margin: 0 auto;">
@@ -109,7 +116,14 @@
           To protect your confidential financial records, please verify your identity before accessing your account details.
         </p>
 
-        <!-- Variation 2B: Verification Failure Alert (Displays when attempts < 3) -->
+        <!-- -------------------------------------------------------------------- -->
+        <!-- VARIATION 2B: VERIFICATION FAILURE ALERT (EXCEPTION PATH)            -->
+        <!-- • Stories: US-01 (KAN-18), US-02 (KAN-19)                            -->
+        <!-- • Data: Dynamic attempts remaining counter (2 or 1)                  -->
+        <!-- • Rule: Shown after invalid credentials; warns of impending lockout  -->
+        <!-- • Next step: Customer corrects credentials or requests callback      -->
+        <!-- • Branch outcome: Valid retry unlocks session; 3rd failure locks out -->
+        <!-- -------------------------------------------------------------------- -->
         <div id="login-alert" class="alert alert-danger" style="display: none;"></div>
 
         <form id="form-login">
@@ -158,18 +172,17 @@
 
     <!-- ========================================================================== -->
     <!-- SCREEN 3: ACCOUNT SUMMARY & RESOLUTION STATUS                                -->
-    <!-- • Related Story IDs: US-05 (KAN-22), US-06 (KAN-23), US-17 (KAN-34),        -->
-    <!--   US-18 (KAN-35)                                                            -->
-    <!-- • Key Data Shown: Total balance, overdue arrears amount, arrears stage,     -->
+    <!-- • Stories: US-05 (KAN-22), US-06 (KAN-23), US-17 (KAN-34), US-18 (KAN-35)   -->
+    <!-- • Data: Total balance, overdue arrears amount, delinquency stage,           -->
     <!--   account reference, tabbed schedule / audit history                        -->
-    <!-- • Validation / Business Rules: Only rendered after successful identity      -->
-    <!--   verification. Evaluates account state into one of three plan variations:  -->
-    <!--   (A: Active Plan, B: Eligible No Plan, C: Ineligible High-Risk)            -->
-    <!-- • Next Steps Possible:                                                      -->
-    <!--   - If eligible & no plan: "Arrange a Plan" -> Screen 4 (Plan Selection)   -->
-    <!--   - "Request Representative Guidance" -> Screen 8 (Rep Callback Form)       -->
-    <!--   - "End Session" (Header) -> Clears session & returns to Screen 1          -->
-    <!--   - "Report Financial Difficulty" (Footer) -> Screen 9 (Vulnerability)      -->
+    <!-- • Rule: Only rendered after successful identity verification. Evaluates     -->
+    <!--   account state into one of three plan variations (A, B, or C).             -->
+    <!-- • Next step: Customer selects next action: arrange plan (if eligible),       -->
+    <!--   request representative guidance, report vulnerability, or end session     -->
+    <!-- • Branch outcome:                                                           -->
+    <!--   - Eligible customer with no plan -> Navigates to Screen 4 (Plan Options)  -->
+    <!--   - Customer with active plan -> Displays current schedule & progress       -->
+    <!--   - Ineligible / high-risk customer -> Displays policy explanation & options-->
     <!-- ========================================================================== -->
     <section id="view-summary" class="portal-view">
       <div class="card">
@@ -221,12 +234,15 @@
 
           <!-- -------------------------------------------------------------------- -->
           <!-- VARIATION 3A: ACTIVE REPAYMENT PLAN IN PLACE (e.g. Elena Rostova)    -->
-          <!-- • Related Story IDs: US-05 (KAN-22), US-06 (KAN-23)                  -->
-          <!-- • Key Data Shown: Agreement name, instalment amount, frequency,      -->
-          <!--   next debit date, instalment progress (X of Y), remaining debt      -->
-          <!-- • Validation / Business Rules: "Arrange a Plan" button suppressed;   -->
-          <!--   deflects routine balance inquiries without agent intervention      -->
-          <!-- • Next Steps: Review schedule, review contact tab, end session       -->
+          <!-- • Stories: US-05 (KAN-22), US-06 (KAN-23)                            -->
+          <!-- • Data: Agreement name, instalment amount, frequency, next payment   -->
+          <!--   date, instalment progress count (X of Y), remaining debt balance   -->
+          <!-- • Rule: "Arrange a Plan" button suppressed; deflects routine balance -->
+          <!--   inquiries without representative intervention                      -->
+          <!-- • Next step: Customer reviews active schedule or switches to contact -->
+          <!--   history tab                                                        -->
+          <!-- • Branch outcome: Maintains current arrangement; defers to scheduled -->
+          <!--   direct debit                                                       -->
           <!-- -------------------------------------------------------------------- -->
           <div id="existing-plan-container" style="display: none;">
             <div class="alert alert-success">
@@ -265,12 +281,15 @@
 
           <!-- -------------------------------------------------------------------- -->
           <!-- VARIATION 3B: NO ACTIVE PLAN - ELIGIBLE FOR PORTAL (e.g. Sarah J.)   -->
-          <!-- • Related Story IDs: US-05 (KAN-22), US-06 (KAN-23), US-08 (KAN-25)  -->
-          <!-- • Key Data Shown: Red "No Active Plan" warning, prompt to arrange     -->
-          <!-- • Validation / Business Rules: Account is within eligible arrears    -->
-          <!--   limits (<90 days, no complex legal hold)                           -->
-          <!-- • Next Steps:                                                        -->
-          <!--   - "Arrange a Plan" -> Navigates to Screen 4 (Plan Selection)       -->
+          <!-- • Stories: US-05 (KAN-22), US-06 (KAN-23), US-08 (KAN-25)            -->
+          <!-- • Data: Red "No Active Plan" warning, overdue arrears reminder,      -->
+          <!--   action prompts                                                     -->
+          <!-- • Rule: Account is within eligible arrears limits (<90 days, no      -->
+          <!--   complex legal hold); automated self-service plan options available -->
+          <!-- • Next step: Click "Arrange a Plan" or "Request Representative       -->
+          <!--   Guidance"                                                          -->
+          <!-- • Branch outcome:                                                    -->
+          <!--   - "Arrange a Plan" -> Screen 4 (Plan Options)                      -->
           <!--   - "Request Representative Guidance" -> Screen 8 (Callback form)    -->
           <!-- -------------------------------------------------------------------- -->
           <div id="no-plan-container">
@@ -293,15 +312,18 @@
 
           <!-- -------------------------------------------------------------------- -->
           <!-- VARIATION 3C: INELIGIBLE FOR ONLINE PLAN SELECTION (e.g. David O.)   -->
-          <!-- • Related Story IDs: US-06 (KAN-23), US-08 (KAN-25), US-13 (KAN-30)  -->
-          <!-- • Key Data Shown: Ineligibility reason code, credit policy warning,  -->
-          <!--   three explicit next-step options, direct telephone contact info    -->
-          <!-- • Validation / Business Rules:                                       -->
-          <!--   - "Arrange a Plan" button is strictly suppressed (BPMN Gateway_17jcpgs)-->
-          <!--   - Arrears >= 90 days or Stage 3 pre-legal escalation threshold     -->
-          <!-- • Next Steps:                                                        -->
+          <!-- • Stories: US-06 (KAN-23), US-08 (KAN-25), US-13 (KAN-30)            -->
+          <!-- • Data: Specific credit policy failure reason, arrears delinquency   -->
+          <!--   code, three explicit customer options, recovery phone line & hours -->
+          <!-- • Rule: "Arrange a Plan" button is strictly suppressed (BPMN         -->
+          <!--   Gateway_17jcpgs); triggered when arrears >= 90 days or Stage 3     -->
+          <!--   pre-legal escalation threshold                                     -->
+          <!-- • Next step: Click "Request Specialist Callback", "Report Financial  -->
+          <!--   Difficulty", or dial recovery team directly                        -->
+          <!-- • Branch outcome:                                                    -->
           <!--   - "Request Specialist Callback" -> Screen 8 with context autofilled-->
           <!--   - "Report Financial Difficulty" -> Screen 9 (Vulnerability form)   -->
+          <!--   - Direct call -> Customer contacts telephony queue with account ref-->
           <!-- -------------------------------------------------------------------- -->
           <div id="ineligible-plan-container" style="display: none;">
             <div class="alert alert-warning">
@@ -350,11 +372,13 @@
 
         <!-- ---------------------------------------------------------------------- -->
         <!-- TAB 2: CONTACT & NOTICE AUDIT HISTORY                                  -->
-        <!-- • Related Story IDs: US-17 (KAN-34), US-18 (KAN-35)                   -->
-        <!-- • Key Data Shown: Chronological table of notices, SMS, calls, PTPs,    -->
-        <!--   and vulnerability holds with timestamps                              -->
-        <!-- • Validation / Business Rules: Immutable audit trail fetched from bank  -->
-        <!--   records; gives user and reps transparent context                     -->
+        <!-- • Stories: US-17 (KAN-34), US-18 (KAN-35)                              -->
+        <!-- • Data: Chronological table of notices, SMS, calls, PTPs, and          -->
+        <!--   vulnerability holds with exact timestamps                            -->
+        <!-- • Rule: Immutable audit trail fetched from bank records; transparent   -->
+        <!--   context shared between customer and representative                   -->
+        <!-- • Next step: Customer reviews past communications or returns to plan tab-->
+        <!-- • Branch outcome: Self-service awareness of collections audit trail    -->
         <!-- ---------------------------------------------------------------------- -->
         <div class="tab-pane" id="tab-pane-contact">
           <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 14px;">
@@ -380,16 +404,16 @@
 
     <!-- ========================================================================== -->
     <!-- SCREEN 4: PAYMENT PLAN SELECTION                                            -->
-    <!-- • Related Story IDs: US-08 (KAN-25), US-09 (KAN-26), US-13 (KAN-30)         -->
-    <!-- • Key Data Shown: Arrears amount, pre-approved plan cards (name, instalment,-->
-    <!--   frequency, duration, total repayable)                                     -->
-    <!-- • Validation / Business Rules: Plans are simplified templates matched to    -->
-    <!--   the customer's debt tier. Ineligible plans suppressed.                    -->
-    <!-- • Next Steps Possible:                                                      -->
-    <!--   - "Select this plan" -> Navigates to Screen 5 (Plan Details / Schedule)   -->
+    <!-- • Stories: US-08 (KAN-25), US-09 (KAN-26), US-13 (KAN-30)                   -->
+    <!-- • Data: Overdue arrears amount, pre-approved plan cards (name, monthly       -->
+    <!--   instalment, duration, total repayable)                                    -->
+    <!-- • Rule: Plan options are generated from verified account attributes and     -->
+    <!--   credit risk tier. Ineligible plans are suppressed.                        -->
+    <!-- • Next step: Customer selects preferred plan or requests representative     -->
+    <!-- • Branch outcome:                                                           -->
+    <!--   - "Select this plan" -> Screen 5 (Plan Details & Binding Schedule)         -->
     <!--   - "Not happy with these options? Request a rep" -> Screen 8 with context  -->
     <!--   - "Back to Account Summary" -> Returns to Screen 3                        -->
-    <!--   - "Report Financial Difficulty" (Footer) -> Screen 9                      -->
     <!-- ========================================================================== -->
     <section id="view-plans" class="portal-view">
       <div class="card">
@@ -425,16 +449,17 @@
 
     <!-- ========================================================================== -->
     <!-- SCREEN 5: PLAN DETAILS & SCHEDULE CONFIRMATION                              -->
-    <!-- • Related Story IDs: US-09 (KAN-26), US-10 (KAN-27)                         -->
-    <!-- • Key Data Shown: Selected plan name, monthly instalment, total duration,   -->
-    <!--   arrears cleared, full table of monthly payment due dates & amounts        -->
-    <!-- • Validation / Business Rules: Customer must tick statutory acknowledgment  -->
-    <!--   checkbox. Attempting to click "Confirm Plan" without ticking triggers      -->
-    <!--   the Acknowledgment Required modal popup (#modal-ack-required)             -->
-    <!-- • Next Steps Possible:                                                      -->
-    <!--   - Validated click on "Confirm Plan" -> Navigates to Screen 6 (PTP Capture)-->
+    <!-- • Stories: US-09 (KAN-26), US-10 (KAN-27)                                   -->
+    <!-- • Data: Selected plan name, monthly instalment, duration, total debt        -->
+    <!--   repayable, full table of monthly payment due dates and amounts, statutory -->
+    <!--   acknowledgment checkbox                                                   -->
+    <!-- • Rule: Customer must check statutory acknowledgment box before proceeding. -->
+    <!--   Clicking without ticking triggers Modal 1 (#modal-ack-required).           -->
+    <!-- • Next step: Customer checks box and clicks "Confirm Plan & Proceed"       -->
+    <!-- • Branch outcome:                                                           -->
+    <!--   - Box checked -> Navigates to Screen 6 (Promise-to-Pay Form)              -->
+    <!--   - Box unchecked -> Intercepted by Modal 1 (Acknowledgment Required pop-up)-->
     <!--   - "Change Plan" -> Returns to Screen 4 (Plan Selection)                   -->
-    <!--   - "Report Financial Difficulty" (Footer) -> Screen 9                      -->
     <!-- ========================================================================== -->
     <section id="view-plan-details" class="portal-view">
       <div class="card" style="max-width: 680px; margin: 0 auto;">
@@ -505,16 +530,17 @@
 
     <!-- ========================================================================== -->
     <!-- SCREEN 6: DIGITAL PROMISE-TO-PAY & ELECTRONIC SIGNATURE                     -->
-    <!-- • Related Story IDs: US-10 (KAN-27), US-11 (KAN-28), US-12 (KAN-29)         -->
-    <!-- • Key Data Shown: Plan commitment amount, due date input within 30 days,    -->
-    <!--   payment method select, e-signature input, live cursive preview, legal     -->
-    <!--   consent under Electronic Communications Act 2000                          -->
-    <!-- • Validation / Business Rules: Minimum threshold payment required; date     -->
-    <!--   must be within 30 days; full legal name signature & checkbox required     -->
-    <!-- • Next Steps Possible:                                                      -->
-    <!--   - "Submit Promise to Pay & Finalise" -> Screen 7 (Agreement Confirmed)    -->
+    <!-- • Stories: US-10 (KAN-27), US-11 (KAN-28), US-12 (KAN-29)                   -->
+    <!-- • Data: Promised payment amount, payment due date (within 30 days), payment -->
+    <!--   method selector, electronic signature input, live cursive signature      -->
+    <!--   preview with session tracking ID, statutory e-sign consent checkbox      -->
+    <!-- • Rule: Minimum payment threshold enforced; commitment date must be within  -->
+    <!--   30 days; full legal name signature & consent required                     -->
+    <!-- • Next step: Complete fields, sign name, tick consent, and click submit     -->
+    <!-- • Branch outcome:                                                           -->
+    <!--   - Valid submission -> Screen 7 (Agreement Confirmation); pauses calls     -->
+    <!--     and updates core collections record                                     -->
     <!--   - "Back" -> Returns to Screen 5 (Plan Details)                            -->
-    <!--   - "Report Financial Difficulty" (Footer) -> Screen 9                      -->
     <!-- ========================================================================== -->
     <section id="view-ptp" class="portal-view">
       <div class="card" style="max-width: 620px; margin: 0 auto;">
@@ -584,17 +610,18 @@
 
     <!-- ========================================================================== -->
     <!-- SCREEN 7: AGREEMENT CONFIRMATION & SESSION SUMMARY                          -->
-    <!-- • Related Story IDs: US-10 (KAN-27), US-11 (KAN-28), US-12 (KAN-29),         -->
-    <!--   US-18 (KAN-35), US-20 (KAN-37)                                            -->
-    <!-- • Key Data Shown: Unique Confirmation Code (LTB-PTP-2026-XXXX), account     -->
-    <!--   summary list, electronic signature, UTC signing timestamp, call pause     -->
-    <!--   notice, notice that copy has been emailed & SMS-dispatched                -->
-    <!-- • Validation / Business Rules: Writes completed PTP & plan transaction back -->
-    <!--   to core records; updates account state to active agreement                -->
-    <!-- • Next Steps Possible:                                                      -->
-    <!--   - "Return to Account Overview" -> Screen 3 (shows updated Active Plan)   -->
+    <!-- • Stories: US-10 (KAN-27), US-11 (KAN-28), US-12 (KAN-29), US-18 (KAN-35),  -->
+    <!--   US-20 (KAN-37)                                                            -->
+    <!-- • Data: Unique Confirmation Code (LTB-PTP-2026-XXXX), account summary list, -->
+    <!--   agreed plan, instalment due date, e-signature, UTC signed timestamp,      -->
+    <!--   outbound call pause notice, email/SMS dispatch notification               -->
+    <!-- • Rule: Outcome recorded to persistent account state; commits transactional -->
+    <!--   write back to legacy database (US-12); pauses outbound collection calls   -->
+    <!-- • Next step: Return to Account Overview, print/save agreement, or sign out  -->
+    <!-- • Branch outcome:                                                           -->
+    <!--   - "Return to Account Overview" -> Screen 3 (renders Variation 3A Active)  -->
     <!--   - "Print / Save Agreement PDF" -> Triggers browser print/PDF export       -->
-    <!--   - "Sign Out" -> Logs out and returns to Screen 1                          -->
+    <!--   - "Sign Out" -> Ends session and returns to Screen 1                      -->
     <!-- ========================================================================== -->
     <section id="view-confirmation" class="portal-view">
       <div class="card" style="max-width: 680px; margin: 0 auto;">
@@ -679,24 +706,29 @@
     </section>
 
     <!-- ========================================================================== -->
-    <!-- SCREEN 8: REPRESENTATIVE ROUTING & CALLBACK REQUEST                         -->
-    <!-- • Related Story IDs: US-02 (KAN-19), US-13 (KAN-30), US-15 (KAN-32),         -->
-    <!--   US-17 (KAN-34)                                                            -->
-    <!-- • Key Data Shown: Reason for routing (autofilled), preserved session audit, -->
+    <!-- SCREEN 8: ROUTED TO REPRESENTATIVE / CALLBACK REQUEST (EXCEPTION PATH)       -->
+    <!-- • Stories: US-02 (KAN-19), US-13 (KAN-30), US-15 (KAN-32), US-17 (KAN-34)    -->
+    <!-- • Data: Reason for routing (autofilled), preserved session audit notes,     -->
     <!--   customer name, account number, phone, email, preferred weekday selector, -->
     <!--   preferred time of day selector, optional notes textarea                   -->
-    <!-- • Validation / Business Rules: Preserves context from prior journey step    -->
-    <!--   so customer does not repeat information; clarifies that window is a       -->
-    <!--   preference and representatives will try to contact within timeframe      -->
-    <!-- • Next Steps Possible:                                                      -->
-    <!--   - "Submit Request for Callback" -> Displays Variation 8B (Success Conf)   -->
-    <!--   - "Cancel" -> Returns to previous view (Landing or Account Summary)       -->
+    <!-- • Rule: Context preserved from prior journey step so customer does not       -->
+    <!--   repeat info. Reps will try to contact within preferred timeframe.         -->
+    <!-- • Next step: Complete contact fields and submit callback request            -->
+    <!-- • Branch outcome:                                                           -->
+    <!--   - Submit -> Variation 8B (Callback Scheduled Confirmation with ref code)  -->
+    <!--   - "Cancel" -> Returns to previous view                                    -->
     <!-- ========================================================================== -->
     <section id="view-request-call" class="portal-view">
       <div class="card" style="max-width: 640px; margin: 0 auto;">
         
         <!-- ---------------------------------------------------------------------- -->
         <!-- VARIATION 8A: CALLBACK REQUEST FORM (AUTOFILLED CONTEXT)               -->
+        <!-- • Stories: US-02 (KAN-19), US-13 (KAN-30), US-15 (KAN-32), US-17       -->
+        <!-- • Data: Autofilled reason code, full session audit payload, contact     -->
+        <!--   inputs, weekday & time-of-day slots, optional notes                   -->
+        <!-- • Rule: Validates telephone format; preserves context across channel     -->
+        <!-- • Next step: Click "Submit Request for Callback"                        -->
+        <!-- • Branch outcome: Queues case into representative console and shows 8B  -->
         <!-- ---------------------------------------------------------------------- -->
         <div id="rep-form-container">
           <h1 class="card-title">Representative Contact Request</h1>
@@ -785,9 +817,12 @@
 
         <!-- ---------------------------------------------------------------------- -->
         <!-- VARIATION 8B: CALLBACK QUEUED CONFIRMATION                             -->
-        <!-- • Key Data Shown: Queue Reference Code (LTB-REP-2026-XXXX), requested   -->
-        <!--   weekday/time slot, contact expectation disclaimer                     -->
-        <!-- • Next Steps Possible: "Done • Return" -> Navigates to Summary / Landing-->
+        <!-- • Stories: US-15 (KAN-32), US-17 (KAN-34)                              -->
+        <!-- • Data: Queue Reference Code (LTB-REP-2026-XXXX), requested            -->
+        <!--   weekday/time slot, primary topic, SLA non-repetitive contact note    -->
+        <!-- • Rule: Outcome recorded; rep assigned context for outbound follow-up   -->
+        <!-- • Next step: Click "Done • Return"                                      -->
+        <!-- • Branch outcome: Returns to Account Summary if logged in, else Landing -->
         <!-- ---------------------------------------------------------------------- -->
         <div id="rep-success-container" style="display: none;">
           <div style="border-left: 4px solid var(--color-success); padding-left: 16px; margin-bottom: 20px;">
@@ -840,15 +875,16 @@
 
     <!-- ========================================================================== -->
     <!-- SCREEN 9: REPORT FINANCIAL DIFFICULTY / VULNERABILITY DECLARATION           -->
-    <!-- • Related Story IDs: US-06 (KAN-23), US-14 (KAN-31)                         -->
-    <!-- • Key Data Shown: Nature of difficulty selector, details textarea, advice   -->
+    <!-- • Stories: US-06 (KAN-23), US-14 (KAN-31)                                   -->
+    <!-- • Data: Nature of difficulty selector, details textarea, independent advice -->
     <!--   helpline numbers (StepChange, National Debtline), breathing space notice  -->
-    <!-- • Validation / Business Rules: Non-judgmental supportive intake. Informs    -->
-    <!--   customer that statutory pause is not debt forgiveness ("not a free pass") -->
-    <!--   and will be evaluated by an agent as soon as possible. Applies 30-day     -->
-    <!--   statutory recovery hold and logs audit event. (BPMN Activity_1v6qc40)     -->
-    <!-- • Next Steps Possible:                                                      -->
-    <!--   - "Submit Vulnerability Notice" -> Displays Variation 9B (Hold Confirmed) -->
+    <!-- • Rule: Non-judgmental supportive intake. Informs customer that statutory   -->
+    <!--   pause is not debt forgiveness ("not a free pass") and will be evaluated   -->
+    <!--   by an agent promptly. Applies statutory hold and logs audit event (BPMN   -->
+    <!--   Activity_1v6qc40).                                                        -->
+    <!-- • Next step: Complete hardship category, submit declaration or go back      -->
+    <!-- • Branch outcome:                                                           -->
+    <!--   - Submit -> Variation 9B (Statutory Hold Applied Confirmation)            -->
     <!--   - "Back" -> Returns to previous view                                      -->
     <!-- ========================================================================== -->
     <section id="view-vulnerability" class="portal-view">
@@ -856,6 +892,12 @@
         
         <!-- ---------------------------------------------------------------------- -->
         <!-- VARIATION 9A: FINANCIAL DIFFICULTY INTAKE FORM                         -->
+        <!-- • Stories: US-14 (KAN-31)                                              -->
+        <!-- • Data: Nature of difficulty dropdown, free-text details input, debt    -->
+        <!--   advice charity phone numbers                                          -->
+        <!-- • Rule: Captures statutory category; notifies that arrears remain due   -->
+        <!-- • Next step: Click "Submit Vulnerability Notice & Apply Hold"           -->
+        <!-- • Branch outcome: Activates hold across account and reveals 9B          -->
         <!-- ---------------------------------------------------------------------- -->
         <div id="vuln-form-container">
           <div style="border-left: 4px solid var(--color-primary); padding-left: 16px; margin-bottom: 20px;">
@@ -910,9 +952,12 @@
 
         <!-- ---------------------------------------------------------------------- -->
         <!-- VARIATION 9B: STATUTORY HOLD CONFIRMATION & AGENT REFERRAL NOTICE       -->
-        <!-- • Key Data Shown: Protection Ref (LTB-CARE-2026-XXXX), category summary,-->
-        <!--   disclaimer that case will be reviewed promptly by care agent          -->
-        <!-- • Next Steps Possible: "Return to Portal" -> Navigates to Summary / Landing-->
+        <!-- • Stories: US-14 (KAN-31)                                              -->
+        <!-- • Data: Protection Ref (LTB-CARE-2026-XXXX), reason category, reminder  -->
+        <!--   that pause is temporary and case will be reviewed by care agent       -->
+        <!-- • Rule: Confirms statutory hold and logs audit event                    -->
+        <!-- • Next step: Click "Return to Portal"                                   -->
+        <!-- • Branch outcome: Navigates back to Account Summary / Landing           -->
         <!-- ---------------------------------------------------------------------- -->
         <div id="vuln-success-container" style="display: none;">
           <div style="border-left: 4px solid var(--color-success); padding-left: 16px; margin-bottom: 20px;">
@@ -953,11 +998,12 @@
 
   <!-- -------------------------------------------------------------------------- -->
   <!-- MODAL 1: PLAN ACKNOWLEDGMENT REQUIRED POPUP                                -->
-  <!-- • Related Story IDs: US-10 (KAN-27)                                        -->
-  <!-- • Key Data Shown: Warning message and action prompt                        -->
-  <!-- • Validation / Business Rules: Triggered if user clicks "Confirm Plan"     -->
-  <!--   without checking the statutory agreement schedule box                    -->
-  <!-- • Next Step: User clicks "I Understand", dismisses modal, checks the box   -->
+  <!-- • Stories: US-10 (KAN-27)                                                  -->
+  <!-- • Data: Warning callout and action directive                              -->
+  <!-- • Rule: Intercepts unacknowledged submissions; triggered if customer       -->
+  <!--   clicks "Confirm Plan" without ticking the agreement schedule checkbox   -->
+  <!-- • Next step: Click "I Understand" to dismiss popup                         -->
+  <!-- • Branch outcome: Returns to Screen 5 allowing customer to tick checkbox   -->
   <!-- -------------------------------------------------------------------------- -->
   <div class="modal-overlay" id="modal-ack-required">
     <div class="modal-dialog">
@@ -982,13 +1028,14 @@
 
   <!-- -------------------------------------------------------------------------- -->
   <!-- MODAL 2: SESSION INACTIVITY 1-MINUTE WARNING DIALOG                        -->
-  <!-- • Related Story IDs: US-07 (KAN-24)                                        -->
-  <!-- • Key Data Shown: 60-second countdown warning notice                       -->
-  <!-- • Validation / Business Rules: Triggers at 2 minutes of inactivity;        -->
-  <!--   prevents unattended financial data leakage (BPMN Activity_11ywdyt)        -->
-  <!-- • Next Steps:                                                              -->
-  <!--   - "Keep Session Active" -> Resets 3-minute session timer & closes modal   -->
-  <!--   - "End Session Now" -> Immediately logs out and clears screen data       -->
+  <!-- • Stories: US-07 (KAN-24)                                                  -->
+  <!-- • Data: 60-second countdown warning timer & security notice                -->
+  <!-- • Rule: Triggers at 2 minutes of user inactivity; prevents data leakage in  -->
+  <!--   unattended shared environments (BPMN Activity_11ywdyt)                   -->
+  <!-- • Next step: Click "Keep Session Active" or "End Session Now"              -->
+  <!-- • Branch outcome:                                                          -->
+  <!--   - "Keep Session Active" -> Resets 3-minute timer and returns to journey  -->
+  <!--   - "End Session Now" -> Clears session and returns to Screen 1 (Landing)  -->
   <!-- -------------------------------------------------------------------------- -->
   <div class="modal-overlay" id="modal-timeout-warning">
     <div class="modal-dialog">
@@ -1012,12 +1059,13 @@
   </div>
 
   <!-- -------------------------------------------------------------------------- -->
-  <!-- MODAL 3: SESSION TIMED OUT & PAUSED DIALOG                                 -->
-  <!-- • Related Story IDs: US-07 (KAN-24), US-18 (KAN-35)                        -->
-  <!-- • Key Data Shown: Timeout security notice                                  -->
-  <!-- • Validation / Business Rules: Triggered at 3 minutes of inactivity; DOM   -->
-  <!--   financial variables cleared; event logged to metadata audit trail        -->
-  <!-- • Next Step: User clicks "Return to Sign In" -> Screen 1 / 2               -->
+  <!-- MODAL 3: SESSION TIMED OUT & PAUSED DIALOG (EXCEPTION PATH)                -->
+  <!-- • Stories: US-07 (KAN-24), US-18 (KAN-35)                                  -->
+  <!-- • Data: Session expiration notice, metadata audit logging indicator        -->
+  <!-- • Rule: Triggered after 3 minutes of total inactivity; wipes confidential  -->
+  <!--   debt data from DOM; logs event to portal metadata (BPMN Event_10c4cz0)   -->
+  <!-- • Next step: Click "Return to Sign In"                                     -->
+  <!-- • Branch outcome: Clears active user state and navigates to Screen 1       -->
   <!-- -------------------------------------------------------------------------- -->
   <div class="modal-overlay" id="modal-timeout-expired">
     <div class="modal-dialog">
